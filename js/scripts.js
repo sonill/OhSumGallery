@@ -2,6 +2,7 @@
 	'use strict';
 
 	let class_initials = 'wprlbg';
+	let animation_speed = 600;
 	let current_slide = 1;
 	let total_items = 0;
 	let $gallery_items = '';
@@ -322,7 +323,7 @@
 
 		$(`#${class_initials}-slider-container`).animate({
 			scrollLeft : document.getElementById(class_initials + '-slide-' + current_slide).offsetLeft
-		}, 600,  function(){
+		}, animation_speed,  function(){
 			// enable button
 			$(`#${class_initials}-buttons button`).prop('disabled', false);
 		})
@@ -370,7 +371,7 @@
 			// slide to left
 			$(`#${class_initials}-sidebar`).animate({
 				scrollLeft: document.getElementById(class_initials + '-thumbnail-' + current_slide).offsetLeft - 150
-			}, 500);
+			}, animation_speed);
 			
 		}
 		else{
@@ -384,7 +385,7 @@
 			// slide to top
 			$(`#${class_initials}-sidebar`).animate({
 				scrollTop: ((current_slide-1) * thumbnail_offset) - 150
-			}, 500);
+			}, animation_speed);
 
 		}
 

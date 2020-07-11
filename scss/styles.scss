@@ -1,5 +1,6 @@
 $dark_color:  #171717;
 $light_color : #fff;
+$header_height: 60px;
 
 body{
 	overflow: hidden;
@@ -178,7 +179,7 @@ body{
 }
 
 #wprlbg-header{
-	height: 60px;
+	height: $header_height;
 	border-bottom: solid 1px #3a3a3a;
 	margin-bottom: 20px;
 }
@@ -186,9 +187,12 @@ body{
 #wprlbg-counter{
 	font-size: 20px;
 	color: #BCBCBC;
-	padding: 18px;
+	padding: 0 18px;
 	float: left;
 	font-weight: 300;
+	display: flex;
+	align-items: center;
+	height: $header_height;
 
 }
 
@@ -198,9 +202,9 @@ body{
 	button{
 		background: none;
 		border: none;
-		padding : 20px 0;
+		padding : 0;
 		width: 59px;
-		// color: #fff;
+		height: $header_height;
 		outline: none !important;
 		transition: 0.3s;
 		opacity: 0.5;
@@ -311,6 +315,7 @@ body{
 			height: auto;
 			border-radius: 5px;
 			max-height: 100%;
+			display: block;
 		}
 
 

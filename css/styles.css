@@ -28,10 +28,10 @@ body { overflow: hidden; }
 
 #wprlbg-header { height: 60px; border-bottom: solid 1px #3a3a3a; margin-bottom: 20px; }
 
-#wprlbg-counter { font-size: 20px; color: #BCBCBC; padding: 18px; float: left; font-weight: 300; }
+#wprlbg-counter { font-size: 20px; color: #BCBCBC; padding: 0 18px; float: left; font-weight: 300; display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; height: 60px; }
 
 #wprlbg-buttons { float: right; }
-#wprlbg-buttons button { background: none; border: none; padding: 20px 0; width: 59px; outline: none !important; transition: 0.3s; opacity: 0.5; }
+#wprlbg-buttons button { background: none; border: none; padding: 0; width: 59px; height: 60px; outline: none !important; -webkit-transition: 0.3s; transition: 0.3s; opacity: 0.5; }
 #wprlbg-buttons button svg { margin: auto; }
 #wprlbg-buttons button:hover { opacity: 1; }
 #wprlbg-buttons #wprlbg-show-sidebar path { stroke-width: 0; }
@@ -41,7 +41,7 @@ body { overflow: hidden; }
 
 #wprlbg.has-sidebar #wprlbg-sidebar { display: block; }
 
-.wprlbg-thumbnail { width: 60px; height: 60px; display: block; border-radius: 5px; margin: 0 0 15px; background-size: cover; opacity: 0.4; transition: 0.3s; cursor: pointer; }
+.wprlbg-thumbnail { width: 60px; height: 60px; display: block; border-radius: 5px; margin: 0 0 15px; background-size: cover; opacity: 0.4; -webkit-transition: 0.3s; transition: 0.3s; cursor: pointer; }
 .wprlbg-thumbnail.active { opacity: 1; border: solid 2px #fff; }
 .wprlbg-thumbnail:hover { opacity: 1; }
 
@@ -50,19 +50,19 @@ body { overflow: hidden; }
 #wprlbg-slider { margin: 0; padding: 0; overflow: hidden; }
 #wprlbg-slider li { float: left; margin: 0; padding: 0; list-style: none; height: calc(100vh - 100px); position: relative; }
 #wprlbg-slider li:before { content: ''; position: absolute; z-index: 99; top: 0; left: 0; right: 0; bottom: 0; background: #ffffff00; }
-#wprlbg-slider li img { height: auto; border-radius: 5px; max-height: 100%; }
+#wprlbg-slider li img { height: auto; border-radius: 5px; max-height: 100%; display: block; }
 #wprlbg-slider li .image { position: relative; }
 #wprlbg-slider li .image.loading img { opacity: 0; }
 #wprlbg-slider li .image.loading:before { content: ''; background: url(../images/spinner.png) no-repeat center; position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
 #wprlbg-slider li .caption { color: #fff; font-size: 18px; font-weight: 300; }
 
 @media (min-width: 1200px) { #wprlbg.caption-in-sidebar #wprlbg-slider .caption { margin-left: 30px; width: 300px; min-width: 300px; }
-  #wprlbg.caption-in-sidebar #wprlbg-slider li { display: flex; justify-content: center; }
-  #wprlbg.caption-in-sidebar #wprlbg-slider li .image { display: flex; align-items: center; justify-content: center; }
-  #wprlbg.caption-in-bottom #wprlbg-slider li { display: flex; align-items: center; justify-content: center; height: calc(100vh - 100px); }
+  #wprlbg.caption-in-sidebar #wprlbg-slider li { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; }
+  #wprlbg.caption-in-sidebar #wprlbg-slider li .image { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; }
+  #wprlbg.caption-in-bottom #wprlbg-slider li { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; height: calc(100vh - 100px); }
   #wprlbg.caption-in-bottom #wprlbg-slider li img { margin: 0 auto; }
   #wprlbg.caption-in-bottom #wprlbg-slider li .caption { width: 100% !important; padding: 10px 10px 0; text-align: center; font-size: 16px; } }
-@media (max-width: 1199px) { #wprlbg-slider li { display: flex; align-items: center; justify-content: center; height: calc(100vh - 100px); }
+@media (max-width: 1199px) { #wprlbg-slider li { display: -webkit-box; display: -ms-flexbox; display: flex; -webkit-box-align: center; -ms-flex-align: center; align-items: center; -webkit-box-pack: center; -ms-flex-pack: center; justify-content: center; height: calc(100vh - 100px); }
   #wprlbg-slider li img { margin: 0 auto; }
   #wprlbg-slider li .caption { width: 100% !important; padding: 10px 10px 0; text-align: center; font-size: 16px; } }
 @media (max-width: 767px) { #wprlbg-header { margin-bottom: 10px; }

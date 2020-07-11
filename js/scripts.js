@@ -1,23 +1,259 @@
 (function( $ ) {
 	'use strict';
 
-	let class_initials = 'wprlbg';
-	let animation_speed = 600;
+	const class_initials = 'wprlbg';
+	const animation_speed = 600;
+	const theme_style = 'light'; // dark, light
+
 	let current_slide = 1;
 	let total_items = 0;
 	let $gallery_items = '';
 	let show_sidebar = 1;
 	let caption_style = 'bottom'; // sidebar, bottom
-	let theme_style = 'light'; // dark, light
-	
+	let settings =  '';
+	let gallery_name = '';
+
+	$.fn.ohsumGallery = function(options) {
+
+		// This is the easiest way to have default options.
+        // settings = $.extend({
+        //     color: "#556b2f",
+        //     backgroundColor: "white"
+		// }, options );
+
+		
+		$(this).click(function(e){
+
+			e.preventDefault();
+			
+			gallery_name = $(this).data('ohsum');
+		
+			// generate markups
+			init();
+
+			// open gallery modal
+			show_gallery_modal();
+
+			// calculate slide widths
+			calculate_slider_width();
+
+			// switch to active slide
+			change_slide();
+			
+		})
+
+		
+	} // end plugin main function
+
+
+
 	// ------------------------------------------------------------------
-	// on document load
+	// resize window
 	// ------------------------------------------------------------------
 
-	$(function(){
+	$(window).resize(function(){
+
+		// update dom
+		calculate_slider_width();
+
+		// change_slide() should be called after calculate_slider_width() function
+		change_slide();
+
+	})	
+
+
+	// ------------------------------------------------------------------
+	// change slide when clicked in thumbnail
+	// ------------------------------------------------------------------
+
+	$('body').on('click', `.${class_initials}-thumbnail`, function(){
+		current_slide = $(this).data('id');
+		change_slide();
+	})
+
+
+
+	// ------------------------------------------------------------------
+	// close button
+	// ------------------------------------------------------------------
+	$('body').on('click', `#${class_initials}-close`, function(){
+		close_gallery_modal();
+	})
+
+
+	// ------------------------------------------------------------------
+	// disable buttons after click
+	// ------------------------------------------------------------------
+	$('body').on('click', `#${class_initials}-buttons button`, function(){
+
+		// disable button 
+		$(this).prop('disabled', true);
+		
+	})
+
+
+	// ------------------------------------------------------------------
+	// prev button click
+	// ------------------------------------------------------------------
+
+	$('body').on('click', `#${class_initials}-prev`, function(){
+		current_slide--;
+		if( current_slide < 1) current_slide = total_items;
+		change_slide();
+	})
+
+
+	// ------------------------------------------------------------------
+	// next button click 
+	// ------------------------------------------------------------------
+
+	$('body').on('click', `#${class_initials}-next`, function(){
+		
+		current_slide++;
+		if( current_slide > total_items) current_slide = 1;
+		change_slide();
+
+	})
+
+
+	// ------------------------------------------------------------------
+	// show / hide sidebar button
+	// ------------------------------------------------------------------
+
+	$('body').on('click', `#${class_initials}-show-sidebar`, function(){
+
+		show_sidebar = ( show_sidebar ) ? 0 : 1;
+
+		// add class in main container
+		if( show_sidebar ){
+			$(`#${class_initials}`).addClass('has-sidebar');
+		}
+		else{
+			$(`#${class_initials}`).removeClass('has-sidebar');
+		}
+		
+		calculate_slider_width();
+
+		change_slide();
+	})
+
+
+	// ------------------------------------------------------------------
+	// keyboard detection
+	// ------------------------------------------------------------------
+
+
+	$(`body`).keydown(function(e){
+
+		// update current slide
+		if( e.which == 39 && $(`#${class_initials}`).length > 0 ){
+			// right arrow
+			current_slide++;
+			if( current_slide > total_items) current_slide = 1;
+		}
+		else if( e.which == 37  && $(`#${class_initials}`).length > 0 ){
+			// left arrow
+			current_slide--;
+			if( current_slide < 1) current_slide = total_items;
+		}
+
+		// change slide with animation
+		change_slide();
+
+	});
+
+
+	// ------------------------------------------------------------------
+	// swipe detection
+	// ------------------------------------------------------------------
+
+	let isDragging = false;
+	let mouseDown = false;
+	let pageX_start = 0;
+	let pageX_end = 0;
+	let cur_slide_position = 0;
+	let page_X_diff = 0;
+
+	$('body')
+		.on('mousedown touchstart', `#${class_initials}-slider-container`, function(e) {
+
+			isDragging = false;
+			mouseDown = true;
+			page_X_diff = 0;
+			
+			if( e.pageX !== undefined){
+				// mouse
+				pageX_start = e.pageX;
+			}
+			else{
+				// touch
+				pageX_start = e.originalEvent.changedTouches[0].screenX;
+			}
+
+			// ------------------------------------------------------------------
+			// get current slide offset
+			// using raw javascript becuase jQuery was not returning correct values
+			// ------------------------------------------------------------------
+
+			cur_slide_position = document.getElementById(class_initials + '-slide-' + current_slide).offsetLeft;
+
+		})
+		.on('mousemove touchmove', `#${class_initials}-slider-container`, function(e) {
+			isDragging = true;
+
+			if (isDragging === true && mouseDown === true) {
+
+				// ------------------------------------------------------------------
+				// update drag values
+				// ------------------------------------------------------------------
+
+				if( e.pageX !== undefined){
+					// mouse
+					pageX_end = e.pageX;
+				}
+				else{
+					// touch
+					pageX_end = e.originalEvent.changedTouches[0].screenX;
+				}
+
+				page_X_diff = pageX_start - pageX_end;
+
+				// ------------------------------------------------------------------
+				// scroll page right or left programatically
+				// ------------------------------------------------------------------
+
+				$(this).scrollLeft(cur_slide_position + page_X_diff);
+			}
+			})
+		.on('mouseup touchend', `#${class_initials}-slider-container`, function(e) {
+
+			isDragging = false;
+			mouseDown = false;
+
+			// update current slide
+			if( page_X_diff > 50  ){
+				current_slide++;
+				if( current_slide > total_items) current_slide = 1;
+			}
+			else if( page_X_diff < -50  ){
+				current_slide--;
+				if( current_slide < 1) current_slide = total_items;
+			}
+
+			// change slide with animation
+			change_slide();
+		}
+	);
+
+	
+	// -----------------------------------------------------------------------
+
+
+
+	function init(){
 
 		// ------------------------------------------------------------------
-		// generate basic templates
+		// generate required markups
 		// ------------------------------------------------------------------
 
 		let template = `<div id="${class_initials}" class="${class_initials}-wrapper ${(show_sidebar) ? 'has-sidebar' : ''} caption-in-${caption_style} ${theme_style}-theme">`;
@@ -48,6 +284,7 @@
 
 			template += `</div>`;
 			template += `</div</div>`;
+			
 		// append to body
 		$("body").append(template);
 
@@ -57,9 +294,10 @@
 		// prepare gallery item markups
 		// ------------------------------------------------------------------
 
-		$gallery_items = $('.gallery-item');
-		total_items = $gallery_items.length;
 		let items_counter = 1;
+		$gallery_items = $(`a[data-ohsum="${gallery_name}"]`);
+		total_items = $gallery_items.length;
+
 		$gallery_items.each(function(){
 
 			// ------------------------------------------------------------------
@@ -69,16 +307,13 @@
 			$(`#${class_initials}-sidebar-wrapper`).append(`<a data-href="#${class_initials}-slide-${items_counter}" data-id="${items_counter}" id="${class_initials}-thumbnail-${items_counter}" class="${class_initials}-thumbnail" style="background-image:url(${$('img', this).attr('src')})"></a>`);
 	
 
-
 			// ------------------------------------------------------------------
 			// generate main slider contents
 			// ------------------------------------------------------------------
 
-			let caption = $('.gallery-caption', this).text();
-			let slider_contents = `<li id="${class_initials}-slide-${items_counter}" ><div class="image loading"><img data-src="${$('a', this).attr('href')}" >`;
-				// if( caption.length > 0 ){
-					slider_contents += `<div class="caption">${caption}</div>`;				
-				// }
+			let caption = ( $(this).attr('data-caption') !== undefined) ? $(this).attr('data-caption') : '';
+			let slider_contents = `<li id="${class_initials}-slide-${items_counter}" ><div class="image loading"><img data-src="${ $(this).attr('href')}" >`;
+				slider_contents += `<div class="caption">${caption}</div>`;				
 			slider_contents += `</div></li>`;
 
 			$(`#${class_initials}-slider`).append(slider_contents);
@@ -101,225 +336,31 @@
 		$(`#${class_initials}-total-items`).text(total_items);
 
 
+		// // ------------------------------------------------------------------
+		// // calculate width of slider list items
+		// // ------------------------------------------------------------------
+		// calculate_slider_width();
 
-		// ------------------------------------------------------------------
-		// calculate width of slider list items
-		// ------------------------------------------------------------------
-		calculate_slider_width();
+	}
 
+	function show_gallery_modal(){
 		
-
-		// ------------------------------------------------------------------
-		// resize window
-		// ------------------------------------------------------------------
-
-		$(window).resize(function(){
-			// update dom
-			
-			calculate_slider_width();
-
-			// change_slide() should be called after calculate_slider_width() function
-			change_slide();
-
-		})
+		$(`${class_initials}`).show();
+	}
 
 
-
-		// ------------------------------------------------------------------
-		// mark first image as defaults 
-		// ------------------------------------------------------------------
-		change_slide();
-
-		// thumbnail
-		$(`#${class_initials}-thumbnail-1`).addClass('active');
-
-
-
-		// ------------------------------------------------------------------
-		// show / hide sidebar button
-		// ------------------------------------------------------------------
-
-		$(`#${class_initials}-show-sidebar`).click(function(){
-
-			show_sidebar = ( show_sidebar ) ? 0 : 1;
-
-			// add class in main container
-			if( show_sidebar ){
-				$(`#${class_initials}`).addClass('has-sidebar');
-			}
-			else{
-				$(`#${class_initials}`).removeClass('has-sidebar');
-			}
-			
-			calculate_slider_width();
-
-			change_slide();
-		})
-
-
-
-		// ------------------------------------------------------------------
-		// disable buttons after click
-		// ------------------------------------------------------------------
-		$(`#${class_initials}-buttons button`).click(function(){
-
-			// disable button 
-			$(this).prop('disabled', true);
-			
-		})
-
-
-		// ------------------------------------------------------------------
-		// next button click 
-		// ------------------------------------------------------------------
-
-		$(`#${class_initials}-next`).click(function(){
-			
-			current_slide++;
-			if( current_slide > total_items) current_slide = 1;
-			change_slide();
-
-		})
-
-
-
-		// ------------------------------------------------------------------
-		// prev button click
-		// ------------------------------------------------------------------
-
-		$(`#${class_initials}-prev`).click(function(){
-			current_slide--;
-			if( current_slide < 1) current_slide = total_items;
-			change_slide();
-		})
-
-
-
-		// ------------------------------------------------------------------
-		// change slide when clicked in thumbnail
-		// ------------------------------------------------------------------
-
-		$(`.${class_initials}-thumbnail`).click(function(){
-			current_slide = $(this).data('id');
-			change_slide();
-		})
-
-
-
-		// ------------------------------------------------------------------
-		// keyboard detection
-		// ------------------------------------------------------------------
-		$(`body`).keydown(function(e){
-
-			// update current slide
-			if( e.which == 39 ){
-				// right arrow
-				current_slide++;
-				if( current_slide > total_items) current_slide = 1;
-			}
-			else if( e.which == 37  ){
-				// left arrow
-				current_slide--;
-				if( current_slide < 1) current_slide = total_items;
-			}
-
-			// change slide with animation
-			change_slide();
-
-		});
-
-
-
-		// ------------------------------------------------------------------
-		// swipe detection
-		// ------------------------------------------------------------------
-
-		let isDragging = false;
-		let mouseDown = false;
-		let pageX_start = 0;
-		let pageX_end = 0;
-		let cur_slide_position = 0;
-		let page_X_diff = 0;
-
-		$(`#${class_initials}-slider-container`)
-		    .on('mousedown touchstart', function(e) {
-
-		        isDragging = false;
-		        mouseDown = true;
-		        page_X_diff = 0;
-		        
-		        if( e.pageX !== undefined){
-		        	// mouse
-		        	pageX_start = e.pageX;
-		        }
-		        else{
-		        	// touch
-		        	pageX_start = e.originalEvent.changedTouches[0].screenX;
-		        }
-
-		        // ------------------------------------------------------------------
-		        // get current slide offset
-		        // using raw javascript becuase jQuery was not returning correct values
-		        // ------------------------------------------------------------------
-
-		        cur_slide_position = document.getElementById(class_initials + '-slide-' + current_slide).offsetLeft;
-
-		    })
-		    .on('mousemove touchmove', function(e) {
-		        isDragging = true;
-
-		        if (isDragging === true && mouseDown === true) {
-
-		        	// ------------------------------------------------------------------
-		        	// update drag values
-		        	// ------------------------------------------------------------------
-
-					if( e.pageX !== undefined){
-			        	// mouse
-			        	pageX_end = e.pageX;
-			        }
-			        else{
-			        	// touch
-			        	pageX_end = e.originalEvent.changedTouches[0].screenX;
-			        }
-
-					page_X_diff = pageX_start - pageX_end;
-
-					// ------------------------------------------------------------------
-					// scroll page right or left programatically
-					// ------------------------------------------------------------------
-
-					$(this).scrollLeft(cur_slide_position + page_X_diff);
-		        }
-		     })
-		    .on('mouseup touchend', function(e) {
-
-		        isDragging = false;
-		        mouseDown = false;
-
-				// update current slide
-				if( page_X_diff > 50  ){
-					current_slide++;
-					if( current_slide > total_items) current_slide = 1;
-				}
-				else if( page_X_diff < -50  ){
-					current_slide--;
-					if( current_slide < 1) current_slide = total_items;
-				}
-
-				// change slide with animation
-				change_slide();
-		    }
-		);
-
-	}) // on load function
+	function close_gallery_modal(){
+		$(`#${class_initials}`).remove();
+	}
 
 
 	function change_slide(){
 
+
 		// ------------------------------------------------------------------
 		// scroll to correct slide with animation
 		// ------------------------------------------------------------------
+
 
 		$(`#${class_initials}-slider-container`).animate({
 			scrollLeft : document.getElementById(class_initials + '-slide-' + current_slide).offsetLeft
@@ -334,9 +375,9 @@
 		// ------------------------------------------------------------------
 
 		// select images which are not already loaded
-		let $current_slide_img = $(`#${class_initials}-slide-${current_slide} img:not(.loaded)`);
+		let $current_slide_img = $(`#${class_initials}-slide-${current_slide} img:not(.loaded`);
 		let large_image = $current_slide_img.attr('data-src');
-		
+
 		$current_slide_img
 			.attr('src', large_image)
 			.removeAttr('data-src')
@@ -436,7 +477,6 @@
 		}
 
 
-
 		// ------------------------------------------------------------------
 		// set width of slider ul
 		// ------------------------------------------------------------------
@@ -456,14 +496,16 @@
 		// ------------------------------------------------------------------
 		// set width of each .image div
 		// ------------------------------------------------------------------
-
 		$gallery_items.each(function(index){
-			
-			let $cur_caption = $(`#${class_initials}-slide-${index+1} .caption`);
+
+			let caption = $(this).data('caption');
+			let $caption_sel = $(`#${class_initials}-slide-${index+1} .caption`);
+
 
 			// hide caption if empty
-			if( $cur_caption.text().length < 1 ){
-				$cur_caption.hide();
+			if( caption === undefined || caption.length < 1 ){
+
+				$caption_sel.hide();
 			}
 
 
@@ -477,14 +519,14 @@
 					// mobile devices or other smaller screen
 	
 					// set max height of image
-					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 80px - ${$cur_caption.outerHeight(true)}px)`);
+					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 80px - ${$caption_sel.outerHeight(true)}px)`);
 				}
 
 				else if( window_width >= 768 ){
 					// all other screen sizes
 	
 					// set max height of image
-					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 100px - ${$cur_caption.outerHeight(true)}px)`);
+					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 100px - ${$caption_sel.outerHeight(true)}px)`);
 				}
 				
 			}
@@ -493,3 +535,10 @@
 	} // calculate_slider_width
 
 })( jQuery );
+
+
+// self initialize plugin
+jQuery(document).ready(function($){
+
+	$('a').ohsumGallery();
+})

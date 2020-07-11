@@ -3,15 +3,19 @@
 
 	const class_initials = 'wprlbg';
 	const animation_speed = 600;
-	const theme_style = 'light'; // dark, light
+	const theme_style = 'dark'; // dark, light
 
 	let current_slide = 1;
 	let total_items = 0;
 	let $gallery_items = '';
 	let show_sidebar = 1;
-	let caption_style = 'bottom'; // sidebar, bottom
+	let caption_style = 'sidebar'; // sidebar, bottom
 	let settings =  '';
 	let gallery_name = '';
+	let show_header = 1;
+
+	let header_height = 50;
+	let slide_margin = 20;
 
 	$.fn.ohsumGallery = function(options) {
 
@@ -30,6 +34,9 @@
 		
 			// generate markups
 			init();
+
+			// mark this image as current_slide
+			current_slide = $(this).data('ohsum_id');
 
 			// open gallery modal
 			show_gallery_modal();
@@ -256,7 +263,7 @@
 		// generate required markups
 		// ------------------------------------------------------------------
 
-		let template = `<div id="${class_initials}" class="${class_initials}-wrapper ${(show_sidebar) ? 'has-sidebar' : ''} caption-in-${caption_style} ${theme_style}-theme">`;
+		let template = `<div id="${class_initials}" class="${class_initials}-wrapper ${(show_sidebar) ? 'has-sidebar' : ''} ${(show_header) ? 'show-header' : ''} caption-in-${caption_style} ${theme_style}-theme">`;
 			template += `<div id="${class_initials}-container">`;
 
 			// header
@@ -301,11 +308,20 @@
 		$gallery_items.each(function(){
 
 			// ------------------------------------------------------------------
+			// give each images a unique identifier
+			// ------------------------------------------------------------------
+
+			$(this).attr('data-ohsum_id', items_counter );
+
+
+
+			// ------------------------------------------------------------------
 			// generate thumbnail images
 			// ------------------------------------------------------------------
 
 			$(`#${class_initials}-sidebar-wrapper`).append(`<a data-href="#${class_initials}-slide-${items_counter}" data-id="${items_counter}" id="${class_initials}-thumbnail-${items_counter}" class="${class_initials}-thumbnail" style="background-image:url(${$('img', this).attr('src')})"></a>`);
 	
+
 
 			// ------------------------------------------------------------------
 			// generate main slider contents
@@ -329,7 +345,6 @@
 		})
 
 
-
 		// ------------------------------------------------------------------
 		// update total number of slides in header
 		// ------------------------------------------------------------------
@@ -346,11 +361,13 @@
 	function show_gallery_modal(){
 		
 		$(`${class_initials}`).show();
+		$('body').css('overflow', 'hidden');
 	}
 
 
 	function close_gallery_modal(){
 		$(`#${class_initials}`).remove();
+		$('body').css('overflow', '');
 	}
 
 
@@ -500,14 +517,21 @@
 
 			let caption = $(this).data('caption');
 			let $caption_sel = $(`#${class_initials}-slide-${index+1} .caption`);
-
-
+			let caption_height = 0;
+			
 			// hide caption if empty
 			if( caption === undefined || caption.length < 1 ){
-
 				$caption_sel.hide();
-			}
 
+				// tell css slide li item does not have caption
+				$(`#${class_initials}-slide-${index+1}`).addClass( 'no-caption' );
+			}
+			else{
+				caption_height = $caption_sel.outerHeight(true);
+				
+				
+			}
+			
 
 			if( caption_style == 'bottom'){
 				
@@ -519,17 +543,18 @@
 					// mobile devices or other smaller screen
 	
 					// set max height of image
-					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 80px - ${$caption_sel.outerHeight(true)}px)`);
+					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 80px - ${caption_height}px)`);
 				}
 
 				else if( window_width >= 768 ){
 					// all other screen sizes
 	
 					// set max height of image
-					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 100px - ${$caption_sel.outerHeight(true)}px)`);
+					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - ${header_height + slide_margin}px - ${caption_height}px)`);
 				}
 				
 			}
+			
 
 		}) // foreach
 	} // calculate_slider_width

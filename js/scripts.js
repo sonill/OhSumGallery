@@ -3,20 +3,33 @@
 
 	const class_initials = 'wprlbg';
 	const animation_speed = 600;
+	const header_height = 50;
+	const slide_margin = 20;
+	
+	// plugin options
 	const theme_style = 'dark'; // dark, light
+	let caption_style = 'sidebar'; // sidebar, bottom
+	let show_header = 1;
+	let show_sidebar = 1;
 
+	let window_width = 0;
+	let window_height = 0;
+	let previous_window_width = 0;
+	let previous_window_height = 0;
+
+	let older_slide = 0;
 	let current_slide = 1;
 	let total_items = 0;
 	let $gallery_items = '';
-	let show_sidebar = 1;
-	let caption_style = 'sidebar'; // sidebar, bottom
-	let settings =  '';
 	let gallery_name = '';
-	let show_header = 1;
+	
+	let settings =  '';
+	let resize_window = 0;
 
-	let header_height = 50;
-	let slide_margin = 20;
+	// for debug
+	let show_log = 1;
 
+	
 	$.fn.ohsumGallery = function(options) {
 
 		// This is the easiest way to have default options.
@@ -33,19 +46,18 @@
 			gallery_name = $(this).data('ohsum');
 		
 			// generate markups
-			init();
+			init($(this));
 
-			// mark this image as current_slide
-			current_slide = $(this).data('ohsum_id');
-
+			
 			// open gallery modal
 			show_gallery_modal();
 
-			// calculate slide widths
-			calculate_slider_width();
 
-			// switch to active slide
-			change_slide();
+			window_width = $(window).width();
+			window_height = $(window).height();
+
+			// load and switch to correct slide
+			load_slide();
 			
 		})
 
@@ -53,18 +65,18 @@
 	} // end plugin main function
 
 
-
 	// ------------------------------------------------------------------
 	// resize window
 	// ------------------------------------------------------------------
 
 	$(window).resize(function(){
+		
+		resize_window = 1;
 
-		// update dom
-		calculate_slider_width();
+		// load slide again
+		load_slide();
 
-		// change_slide() should be called after calculate_slider_width() function
-		change_slide();
+		resize_window = 0;
 
 	})	
 
@@ -74,8 +86,13 @@
 	// ------------------------------------------------------------------
 
 	$('body').on('click', `.${class_initials}-thumbnail`, function(){
+		
+		// change older and current slide
+		older_slide = current_slide;
 		current_slide = $(this).data('id');
-		change_slide();
+
+		load_slide();
+
 	})
 
 
@@ -91,7 +108,7 @@
 	// ------------------------------------------------------------------
 	// disable buttons after click
 	// ------------------------------------------------------------------
-	$('body').on('click', `#${class_initials}-buttons button`, function(){
+	$('body').on('click', `#${class_initials}-buttons button:not(#wprlbg-show-sidebar)`, function(){
 
 		// disable button 
 		$(this).prop('disabled', true);
@@ -104,9 +121,12 @@
 	// ------------------------------------------------------------------
 
 	$('body').on('click', `#${class_initials}-prev`, function(){
-		current_slide--;
-		if( current_slide < 1) current_slide = total_items;
-		change_slide();
+		
+		// update older and current slide number
+		older_slide = current_slide;
+		current_slide = get_proper_slide_number(current_slide - 1);
+
+		load_slide();
 	})
 
 
@@ -116,10 +136,11 @@
 
 	$('body').on('click', `#${class_initials}-next`, function(){
 		
-		current_slide++;
-		if( current_slide > total_items) current_slide = 1;
-		change_slide();
+		// update older and current slide number
+		older_slide = current_slide;
+		current_slide = get_proper_slide_number(current_slide + 1);
 
+		load_slide();
 	})
 
 
@@ -140,8 +161,6 @@
 		}
 		
 		calculate_slider_width();
-
-		change_slide();
 	})
 
 
@@ -152,20 +171,20 @@
 
 	$(`body`).keydown(function(e){
 
+		older_slide = current_slide;
+
 		// update current slide
 		if( e.which == 39 && $(`#${class_initials}`).length > 0 ){
 			// right arrow
-			current_slide++;
-			if( current_slide > total_items) current_slide = 1;
+			current_slide = get_proper_slide_number( current_slide + 1);
 		}
 		else if( e.which == 37  && $(`#${class_initials}`).length > 0 ){
 			// left arrow
-			current_slide--;
-			if( current_slide < 1) current_slide = total_items;
+			current_slide = get_proper_slide_number( current_slide - 1);
 		}
 
 		// change slide with animation
-		change_slide();
+		load_slide();
 
 	});
 
@@ -178,7 +197,6 @@
 	let mouseDown = false;
 	let pageX_start = 0;
 	let pageX_end = 0;
-	let cur_slide_position = 0;
 	let page_X_diff = 0;
 
 	$('body')
@@ -202,8 +220,6 @@
 			// using raw javascript becuase jQuery was not returning correct values
 			// ------------------------------------------------------------------
 
-			cur_slide_position = document.getElementById(class_initials + '-slide-' + current_slide).offsetLeft;
-
 		})
 		.on('mousemove touchmove', `#${class_initials}-slider-container`, function(e) {
 			isDragging = true;
@@ -225,30 +241,42 @@
 
 				page_X_diff = pageX_start - pageX_end;
 
+				
 				// ------------------------------------------------------------------
 				// scroll page right or left programatically
 				// ------------------------------------------------------------------
+				
+				$(this).scrollLeft( window_width + page_X_diff );
 
-				$(this).scrollLeft(cur_slide_position + page_X_diff);
 			}
-			})
+		})
 		.on('mouseup touchend', `#${class_initials}-slider-container`, function(e) {
 
 			isDragging = false;
 			mouseDown = false;
 
+			let please_change_slide = 0;
+			
 			// update current slide
 			if( page_X_diff > 50  ){
-				current_slide++;
-				if( current_slide > total_items) current_slide = 1;
+				older_slide = current_slide;
+				current_slide = get_proper_slide_number(current_slide + 1);
+				please_change_slide = 1;
 			}
 			else if( page_X_diff < -50  ){
-				current_slide--;
-				if( current_slide < 1) current_slide = total_items;
+				older_slide = current_slide;
+				current_slide = get_proper_slide_number(current_slide - 1);
+				please_change_slide = 1;
 			}
 
-			// change slide with animation
-			change_slide();
+			if( please_change_slide ){
+
+				let slide_offset_val = ( page_X_diff < 0 ) ? ( (window_width * 3) - 1360 + page_X_diff ) : page_X_diff;
+
+				load_slide( slide_offset_val  );
+
+			}
+
 		}
 	);
 
@@ -256,8 +284,7 @@
 	// -----------------------------------------------------------------------
 
 
-
-	function init(){
+	function init($this){
 
 		// ------------------------------------------------------------------
 		// generate required markups
@@ -296,7 +323,6 @@
 		$("body").append(template);
 
 
-
 		// ------------------------------------------------------------------
 		// prepare gallery item markups
 		// ------------------------------------------------------------------
@@ -322,39 +348,23 @@
 			$(`#${class_initials}-sidebar-wrapper`).append(`<a data-href="#${class_initials}-slide-${items_counter}" data-id="${items_counter}" id="${class_initials}-thumbnail-${items_counter}" class="${class_initials}-thumbnail" style="background-image:url(${$('img', this).attr('src')})"></a>`);
 	
 
-
-			// ------------------------------------------------------------------
-			// generate main slider contents
-			// ------------------------------------------------------------------
-
-			let caption = ( $(this).attr('data-caption') !== undefined) ? $(this).attr('data-caption') : '';
-			let slider_contents = `<li id="${class_initials}-slide-${items_counter}" ><div class="image loading"><img data-src="${ $(this).attr('href')}" >`;
-				slider_contents += `<div class="caption">${caption}</div>`;				
-			slider_contents += `</div></li>`;
-
-			$(`#${class_initials}-slider`).append(slider_contents);
-
-
-
 			// ------------------------------------------------------------------
 			// increase total items counter
 			// ------------------------------------------------------------------
 
 			items_counter++;
 
-		})
+		}) // end each loop
+
+
+		// change older and current slide
+		current_slide = $this.data('ohsum_id');
 
 
 		// ------------------------------------------------------------------
 		// update total number of slides in header
 		// ------------------------------------------------------------------
 		$(`#${class_initials}-total-items`).text(total_items);
-
-
-		// // ------------------------------------------------------------------
-		// // calculate width of slider list items
-		// // ------------------------------------------------------------------
-		// calculate_slider_width();
 
 	}
 
@@ -371,50 +381,145 @@
 	}
 
 
-	function change_slide(){
+	function load_slide(scroll_left_pos = 0){
 
 
 		// ------------------------------------------------------------------
-		// scroll to correct slide with animation
+		// generate slider contents
 		// ------------------------------------------------------------------
 
+		let $slides_to_remove = '';
 
-		$(`#${class_initials}-slider-container`).animate({
-			scrollLeft : document.getElementById(class_initials + '-slide-' + current_slide).offsetLeft
-		}, animation_speed,  function(){
+		if( older_slide != current_slide && !resize_window ) {
+
+			// make all caption invisible
+			$(`#${class_initials}-slider .caption`).removeClass('show-caption');
+
+				
+			// ------------------------------------------------------------------
+			// figure out if requested slide is neighbour to active slide
+			// ------------------------------------------------------------------
+
+			if( older_slide != 0 &&  ( current_slide - older_slide == 1  || (older_slide == total_items && current_slide == 1 )  ) ){
+
+				// ------------------------------------------------------------------
+				// same as right arrow click
+				// ------------------------------------------------------------------
+				
+				$slides_to_remove = $(`#${class_initials}-slider li`).first();
+				$(`#${class_initials}-slider`).append(slide_template( get_proper_slide_number( $(`#${class_initials}-slider li`).last().data('id') + 1 ) ));
+
+			}
+			else if( older_slide != 0 && ( current_slide - older_slide == -1  || (older_slide == 1 && current_slide == total_items )  ) ){
+
+				// ------------------------------------------------------------------
+				// same as left arrow click
+				// ------------------------------------------------------------------
+
+				$slides_to_remove = $(`#${class_initials}-slider li`).last();
+				$(`#${class_initials}-slider`).prepend(slide_template( get_proper_slide_number( $(`#${class_initials}-slider li`).first().data('id') - 1 ) ));
+
+			}
+			else{
+
+				$slides_to_remove = $(`#${class_initials}-slider li`);
+
+				// ------------------------------------------------------------------
+				// generate totally new slides
+				// ------------------------------------------------------------------
+
+				let slider_contents = '';
+
+				for( let i = -1; i <= 1; i++ ){
+					slider_contents += slide_template( get_proper_slide_number(  current_slide + i ) );
+				}
+
+				$(`#${class_initials}-slider`).append(slider_contents);
+
+			}
+
+			// remove unwanted slides
+			$slides_to_remove.remove();
+			
+		}
+		
+
+
+		// recalculate slider width
+		calculate_slider_width();
+
+
+		// ------------------------------------------------------------------
+		// figureout if it needs to scoll left or right
+		// ------------------------------------------------------------------
+
+		if(  scroll_left_pos == 0 ){
+			
+			// if scroll_left_pos was not defined by other callback function
+			if( current_slide - older_slide == -1  || (older_slide == 1 && current_slide == total_items ) ) {
+				// slide smoothly from left 
+				scroll_left_pos = window_width * 3;
+			}
+		}
+
+
+		// slide to correct slide with animation
+		$(`#${class_initials}-slider-container`)
+			.scrollLeft( scroll_left_pos )
+			.animate({
+				scrollLeft : window_width
+			}, animation_speed,  function(){
+
+				// bydefault, caption is invisible
+				// make it visible
+
+				$(`#${class_initials}-slide-${current_slide} .caption`).addClass('show-caption');
+
+			// ------------------------------------------------------------------
 			// enable button
+			// ------------------------------------------------------------------
+
 			$(`#${class_initials}-buttons button`).prop('disabled', false);
+
 		})
 
 
-		// ------------------------------------------------------------------
-		// lazy loading images in main slider
-		// ------------------------------------------------------------------
+		if( older_slide != current_slide && !resize_window ) {
 
-		// select images which are not already loaded
-		let $current_slide_img = $(`#${class_initials}-slide-${current_slide} img:not(.loaded`);
-		let large_image = $current_slide_img.attr('data-src');
+			// ------------------------------------------------------------------
+			// lazy loading images in main slider
+			// ------------------------------------------------------------------
 
-		$current_slide_img
-			.attr('src', large_image)
-			.removeAttr('data-src')
-			.load(function(){
+			// select images which are not already loaded
+			let $current_slide_img = $(`#${class_initials}-slide-${current_slide} img:not(.loaded`);
+			let large_image = $current_slide_img.attr('data-src');
 
-				// mark image as loaded
-				$(this).addClass('loaded');
-				
-				let $parent = $(this).parents('.image');			
-				$parent.removeClass('loading');
-			})
+			$current_slide_img
+				.attr('src', large_image)
+				.removeAttr('data-src')
+				.load(function(){
+
+					// mark image as loaded
+					$(this).addClass('loaded');
+					
+					let $parent = $(this).parents('.image');			
+					$parent.removeClass('loading');
+				})
 
 
+			// ------------------------------------------------------------------
+			// change active thumbnail in sidebar
+			// ------------------------------------------------------------------
+			$(`.${class_initials}-thumbnail`).removeClass('active');
+			$(`#${class_initials}-thumbnail-${current_slide}`).addClass('active');
 
-		// ------------------------------------------------------------------
-		// change active thumbnail in sidebar
-		// ------------------------------------------------------------------
-		$(`.${class_initials}-thumbnail`).removeClass('active');
-		$(`#${class_initials}-thumbnail-${current_slide}`).addClass('active');
+			// ------------------------------------------------------------------
+			// update slide number in heading
+			// ------------------------------------------------------------------
 
+			$(`#${class_initials}-current-items`).text(current_slide);
+
+		}
 
 		// ------------------------------------------------------------------
 		// auto scroll sidebar thumbnails
@@ -447,117 +552,154 @@
 
 		}
 
-
-		// ------------------------------------------------------------------
-		// update slide number in heading
-		// ------------------------------------------------------------------
-
-		$(`#${class_initials}-current-items`).text(current_slide);
-
-	} // change slide
+	}
 
 
-	function calculate_slider_width(){
+
+	function slide_template(new_slide_id) {
+
+		let $temp_selector = $( `a[data-ohsum="${gallery_name}"][data-ohsum_id="${new_slide_id}"]`);
+		let caption = $temp_selector.attr('data-caption');
+		if( caption === undefined || caption.length < 1 ) caption = '';
+
+		let temp_slider_contents = '';
+			temp_slider_contents += `<li data-id="${new_slide_id}" id="${class_initials}-slide-${new_slide_id}" style="width:${window_width}px;" >`;
+			temp_slider_contents += `<div class="image loading"><img data-src="${ $temp_selector.attr('href')}" >`;
+			temp_slider_contents += `<div class="caption">${caption}</div>`;				
+			temp_slider_contents += `</div></li>`;
+
+		return temp_slider_contents;
+
+	}
+
+
+
+	function calculate_slider_width(manual_total_items = 3){
 
 		// ------------------------------------------------------------------
 		// calculate width of slider list items
 		// ------------------------------------------------------------------
 
-		let window_width = $(window).width();
-		let window_height = $(window).height();
+		// new window width and height
+		window_width = $(window).width();
+		window_height = $(window).height();
 
-		if(window_width < 1200){
 
-			// auto change caption style in smaller devices
-			caption_style = 'bottom';
+		let resized = 0;
+		if(  previous_window_height != window_height || previous_window_width != window_width ){
+			resized = 1;
 		}
+
+		// update previous window width and height
+		previous_window_width = window_width;
+		previous_window_height = window_height;
+
+		
+		if( resized  ){
+
+			if( window_width < 1200){
+				// auto change caption style in smaller devices
+				caption_style = 'bottom';
+			}
+
+
+			if( window_height > window_width ){
+
+				// ------------------------------------------------------------------
+				// portrait mode
+				// ------------------------------------------------------------------
+
+				let thumbnail_width = 60;
+				
+				// set width of sidebar ul wrapper
+				$(`#${class_initials}-sidebar-wrapper`).css('width', (thumbnail_width * total_items) + 'px');
+
+			}
+			else{
+				// ------------------------------------------------------------------
+				// landscape mode
+				// ------------------------------------------------------------------
+
+				// unset width of sidebar wrapper in landscape mode
+				$(`#${class_initials}-sidebar-wrapper`).css('width', '');
+			}
+
+
+			// ------------------------------------------------------------------
+			// set width of slider ul
+			// ------------------------------------------------------------------
 	
-		if( window_height > window_width ){
+			$(`#${class_initials}-slider`).width( manual_total_items * window_width);
+	
 
 			// ------------------------------------------------------------------
-			// portrait mode
+			// update width of slider li
 			// ------------------------------------------------------------------
 
-			let thumbnail_width = 60;
-			
-			// set width of sidebar ul wrapper
-			$(`#${class_initials}-sidebar-wrapper`).css('width', (thumbnail_width * total_items) + 'px');
+			$(`#${class_initials}-slider li`).css('width', window_width);
+		
 
 		}
-		else{
-			// ------------------------------------------------------------------
-			// landscape mode
-			// ------------------------------------------------------------------
-
-			// unset width of sidebar wrapper in landscape mode
-			$(`#${class_initials}-sidebar-wrapper`).css('width', '');
-		}
-
-
-		// ------------------------------------------------------------------
-		// set width of slider ul
-		// ------------------------------------------------------------------
-
-		$(`#${class_initials}-slider`).width(total_items * window_width);
-
-
-
-		// ------------------------------------------------------------------
-		// set width of slider li
-		// ------------------------------------------------------------------
-
-		$(`#${class_initials}-slider li`).css('width', window_width);
 
 
 		
 		// ------------------------------------------------------------------
 		// set width of each .image div
 		// ------------------------------------------------------------------
-		$gallery_items.each(function(index){
 
-			let caption = $(this).data('caption');
-			let $caption_sel = $(`#${class_initials}-slide-${index+1} .caption`);
-			let caption_height = 0;
+		let $cur_slide_sel = $(`#${class_initials}-slide-${current_slide}`);
+		let caption = $(`a[data-ohsum="${gallery_name}"][data-ohsum_id="${current_slide}"]`).data('caption'); 
+		let $caption_sel = $cur_slide_sel.find('.caption'); // $(`#${class_initials}-slide-${current_slide} .caption`);
+		let caption_height = 0;
+
+		
+		// hide caption if empty
+		if( caption === undefined || caption.length < 1 ){
+			$caption_sel.hide();
+
+			// tell css slide li item does not have caption
+			$cur_slide_sel.addClass( 'no-caption' );
+		}
+		else{
+			caption_height = $caption_sel.outerHeight(true);
+		}
+		
+
+		if( caption_style == 'bottom'){
 			
-			// hide caption if empty
-			if( caption === undefined || caption.length < 1 ){
-				$caption_sel.hide();
-
-				// tell css slide li item does not have caption
-				$(`#${class_initials}-slide-${index+1}`).addClass( 'no-caption' );
-			}
-			else{
-				caption_height = $caption_sel.outerHeight(true);
-				
-				
-			}
+			// ------------------------------------------------------------------
+			// set max height of image
+			// ------------------------------------------------------------------
 			
+			if( window_width < 768 ){
+				// mobile devices or other smaller screen
 
-			if( caption_style == 'bottom'){
-				
-				// ------------------------------------------------------------------
 				// set max height of image
-				// ------------------------------------------------------------------
-				
-				if( window_width < 768 ){
-					// mobile devices or other smaller screen
-	
-					// set max height of image
-					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - 80px - ${caption_height}px)`);
-				}
+				$cur_slide_sel.find('img').css('max-height', `calc(100vh - 80px - ${caption_height}px)`);
+			}
 
-				else if( window_width >= 768 ){
-					// all other screen sizes
-	
-					// set max height of image
-					$(`#${class_initials}-slide-${index+1} img`).css('max-height', `calc(100vh - ${header_height + slide_margin}px - ${caption_height}px)`);
-				}
-				
+			else if( window_width >= 768 ){
+				// all other screen sizes
+
+				// set max height of image
+				$cur_slide_sel.find('img').css('max-height', `calc(100vh - ${header_height + slide_margin}px - ${caption_height}px)`);
 			}
 			
+		}
+		
 
-		}) // foreach
 	} // calculate_slider_width
+
+
+	function get_proper_slide_number(slide_number){
+		if( slide_number < 1 ) return total_items;
+		else if( slide_number > total_items ) return 1;
+		return slide_number;
+	}
+
+	function log(msg){
+		if(show_log) console.log(msg);
+	}
 
 })( jQuery );
 

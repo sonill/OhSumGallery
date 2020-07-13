@@ -7,6 +7,29 @@ body{
 	font-family: 'Roboto', sans-serif;
 }
 
+@mixin dark_scrollbar {
+	/* width */
+	&::-webkit-scrollbar { width: 5px; }
+
+	/* Track */
+	&::-webkit-scrollbar-track {
+		background: $dark_color;
+	}
+
+	&:hover{
+
+		/* Track */
+		&::-webkit-scrollbar-track {
+			background: rgb(54, 54, 54);
+		}
+
+		/* Handle */
+		&::-webkit-scrollbar-thumb {
+			background: #fff;
+		}
+	}
+}
+
 //  ---------------------------------------------------------------------
 // dark theme
 //  ---------------------------------------------------------------------
@@ -24,21 +47,8 @@ body{
 
 	#wprlbg-sidebar { 
 
-		&::-webkit-scrollbar-track {
-			background: $dark_color;
-		}
+		@include dark_scrollbar;
 
-		&:hover{
-			/* Track */
-			&::-webkit-scrollbar-track {
-				background: rgb(54, 54, 54);
-			}
-
-			/* Handle */
-			&::-webkit-scrollbar-thumb {
-				background: #fff;
-			}
-		}
 	}
 
 	#wprlbg-buttons button{
@@ -61,7 +71,9 @@ body{
 	}
 
 	#wprlbg-slider li .caption{
-		color: #c1c1c1;
+		color: #a0a0a0;
+
+		@include dark_scrollbar;
 	}
 }
 
@@ -166,7 +178,15 @@ body{
 			width: 100% !important;			
 			padding: 10px 10px 0;
 			text-align: center;
-			font-size: 16px;
+			// font-size: 16px;
+
+			// font-weight: 500;
+			font-size: 14px;
+			line-height: 21px;
+
+			p{
+				margin: 0 0 15px;
+			}
 		}
 	}
 }
@@ -264,8 +284,6 @@ body{
 	}
 }
 
-
-
 #wprlbg-sidebar{
 	display: none;
 	position: absolute;
@@ -299,7 +317,7 @@ body{
 	
 }
 
-#wprlbg-slider-container{
+#wprlbg-body, #wprlbg-slider-container{
     overflow: hidden;
 }
 
@@ -307,6 +325,7 @@ body{
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
+	transition: 0.5s;
 
 	li{
 		float: left;
@@ -315,6 +334,13 @@ body{
 		list-style: none;
 		height : calc(100vh - #{$slider_v_margin});
 		position: relative;
+		transform: translateX(0);
+		transition: 0.4s;
+		cursor: grab;
+
+		&:active{
+			cursor: grabbing;
+		}
 
 		&:before{
 			content: '';
@@ -332,11 +358,14 @@ body{
 			border-radius: 5px;
 			max-height: 100%;
 			display: block;
+			user-select: none;
 		}
 
 
 		.image{
-    		position: relative;
+			position: relative;
+			
+			
 		}
 
 
@@ -346,24 +375,39 @@ body{
 				opacity: 0;
 			}
 
-			&:before{
-				content: '';
-				background: url(../images/spinner.png) no-repeat center;
-				position: absolute;
-				top: 0;
-				left: 0;
-				right: 0;
-				bottom: 0;
-			}
 		}
 
 		.caption{
 			color: #fff;
 			font-size: 18px;
 			font-weight: 300;
+			opacity: 0;
+			z-index: 999;
+			padding-right: 5px;
+
+			max-height: calc(100% - 60px);
+			overflow: auto;
+
+			strong{
+				font-weight: bold;
+			}
+
+
+		}
+
+		.caption.show-caption{
+			animation-name: fade_in;
+			animation-duration: 0.3s;
+			animation-fill-mode: forwards;
 		}
 
 	}
+}
+
+
+@keyframes fade_in {
+	from {opacity: 0;}
+	to {opacity: 1;}
 }
 
 

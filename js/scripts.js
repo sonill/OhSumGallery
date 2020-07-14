@@ -2,7 +2,6 @@
 	'use strict';
 
 	const class_initials = 'wprlbg';
-	const animation_speed = 600;
 	const header_height = 50;
 	const slide_margin = 20;
 	
@@ -11,25 +10,41 @@
 	let caption_style = 'sidebar'; // sidebar, bottom
 	let show_header = 1;
 	let show_sidebar = 1;
-
+	let  animation_speed = 600;
+	let slideshow_speed = 3000;
+	
 	let window_width = 0;
 	let window_height = 0;
 	let previous_window_width = 0;
 	let previous_window_height = 0;
-
+	
 	let older_slide = 0;
 	let current_slide = 1;
 	let total_items = 0;
 	let $gallery_items = '';
 	let gallery_name = '';
+	let $main_container = '';
 	
 	let settings =  '';
-	let resize_window = 0;
+
+	let resize_window = 0; // required. notifies if window was resized. prevents duplicates
+
+	let mouse_move_timer;
+	let slideshow_loop
+	let slide_show_running = 0;
+	
 
 	// for debug
 	let show_log = 1;
 
+	let $autoplay_btn;
+
+	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><path d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
+
+	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18C4.80558 18 1 14.1944 1 9.5Z" stroke="white" stroke-width="2"/><rect x="10.6667" y="5" width="2.33333" height="9" fill="white"/><rect x="6" y="5" width="2.33333" height="9" fill="white"/></svg>';
 	
+
+
 	$.fn.ohsumGallery = function(options) {
 
 		// This is the easiest way to have default options.
@@ -52,6 +67,7 @@
 			// open gallery modal
 			show_gallery_modal();
 
+			$main_container  = $(`#${class_initials}`);
 
 			window_width = $(window).width();
 			window_height = $(window).height();
@@ -79,6 +95,169 @@
 		resize_window = 0;
 
 	})	
+
+
+	// ------------------------------------------------------------------
+	// show / hide sidebar button
+	// ------------------------------------------------------------------
+
+	$('body').on('click', `#${class_initials}-show-sidebar`, function(){
+
+		show_sidebar = ( show_sidebar ) ? 0 : 1;
+
+		// add class in main container
+		if( show_sidebar ){
+			$(`#${class_initials}`).addClass('has-sidebar');
+		}
+		else{
+			$(`#${class_initials}`).removeClass('has-sidebar');
+		}
+		
+		calculate_slider_width();
+	})
+
+
+	// ------------------------------------------------------------------
+	// autoplay button
+	// ------------------------------------------------------------------
+
+	$('body').on('click', `#${class_initials}-auto-play`, function(){
+
+		$autoplay_btn = $(this);
+
+		if( slide_show_running ){
+			// slide show is running
+
+			// ------------------------------------------------------------------
+			// pause or stop slideshow
+			// ------------------------------------------------------------------
+			
+			slide_show_running = 0;
+				
+			// stop slideshow
+			clearInterval(slideshow_loop);
+
+			// clear mouse move actions
+			clearTimeout(mouse_move_timer);
+
+			// show header
+			show_hide_header(1);
+
+			// show sidebar
+			show_hide_sidebar(1);
+
+			// change slideshow icon
+			$autoplay_btn.html(slideshow_icon_play);
+
+			
+		}
+		else{
+
+
+			// slideshow is not running
+			slide_show_running = 1;
+
+			// hide header
+			show_hide_header(0);
+
+
+			// hide sidebar
+			show_hide_sidebar(0);
+
+			
+			// change slideshow icon
+			$autoplay_btn.html(slideshow_icon_pause);
+
+
+			// start slideshow
+			let i = current_slide;
+			slideshow_loop = setInterval(function(){
+				
+				// simulate next button click
+				$(`#${class_initials}-next`).click();
+				i++;
+
+				if( i == total_items ) {
+					clearInterval(slideshow_loop);
+
+					slide_show_running = 0;
+				
+					// ------------------------------------------------------------------
+					// slideshow complete
+					// ------------------------------------------------------------------
+
+					// change slideshow icon
+					$autoplay_btn.html(slideshow_icon_play);
+
+					// show header
+					show_hide_header(1);
+
+					// show sidebar
+					show_hide_sidebar(1);
+				}
+
+			}, slideshow_speed);
+
+
+			// show header if mouse moves
+			$('body').on('mousemove', $main_container, function(){
+
+				if( !slide_show_running ) return;
+
+				log('asdf');
+
+				// show header again
+				show_hide_header(1);
+				
+				if (mouse_move_timer !== undefined ) {
+					window.clearTimeout(mouse_move_timer);
+				}
+				
+				mouse_move_timer = window.setTimeout(function(){
+					
+					// if mouse does not move for 5 second 
+					// hide header again
+					show_hide_header(0);
+					
+				}, 3000)
+
+			})
+			
+		}
+		
+		
+		
+		
+			
+	})
+
+
+	function show_hide_header(show_or_hide){
+
+		show_header = show_or_hide;
+
+		if( show_header ){
+			$main_container.addClass('show-header');
+		}
+		else{
+			$main_container.removeClass('show-header');
+		}
+	}
+
+
+	function show_hide_sidebar(show_or_hide){
+
+		show_sidebar = show_or_hide;
+		if( show_sidebar ){
+			$main_container.addClass('has-sidebar');
+		}
+		else{
+			$main_container.removeClass('has-sidebar');
+		}
+	}
+
+
+	
 
 
 	// ------------------------------------------------------------------
@@ -143,25 +322,6 @@
 		load_slide();
 	})
 
-
-	// ------------------------------------------------------------------
-	// show / hide sidebar button
-	// ------------------------------------------------------------------
-
-	$('body').on('click', `#${class_initials}-show-sidebar`, function(){
-
-		show_sidebar = ( show_sidebar ) ? 0 : 1;
-
-		// add class in main container
-		if( show_sidebar ){
-			$(`#${class_initials}`).addClass('has-sidebar');
-		}
-		else{
-			$(`#${class_initials}`).removeClass('has-sidebar');
-		}
-		
-		calculate_slider_width();
-	})
 
 
 	// ------------------------------------------------------------------
@@ -283,6 +443,18 @@
 	
 	// -----------------------------------------------------------------------
 
+	function show_gallery_modal(){
+		
+		$(`${class_initials}`).show();
+		$('body').css('overflow', 'hidden');
+	}
+
+
+	function close_gallery_modal(){
+		$(`#${class_initials}`).remove();
+		$('body').css('overflow', '');
+	}
+
 
 	function init($this){
 
@@ -300,10 +472,11 @@
 				template += `</div>`;
 
 				template += `<div id="${class_initials}-buttons">`; 
-					template += `<button type="button" id="${class_initials}-show-sidebar"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5625 0H17V7.4375H9.5625V0Z" fill="white" /><path d="M0 0H7.4375V7.4375H0V0Z" fill="white"/><path d="M9.5625 9.5625H17V17H9.5625V9.5625Z" fill="white"/><path d="M0 9.5625H7.4375V17H0V9.5625Z" fill="white"/></svg></button>`; 
-					template += `<button type="button" id="${class_initials}-prev"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.37093 1.21777L1.09583 10.1912M9.37093 17.8088L1.09583 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
-					template += `<button type="button" id="${class_initials}-next"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.62677 1.21777L9.90187 10.1912M1.62677 17.8088L9.90187 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
-					template += `<button type="button" id="${class_initials}-close"><svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6484 1.21777L9.3733 10.1912M17.6484 17.8088L9.3733 8.83535M1.62793 1.21777L9.90303 10.1912M1.62793 17.8088L9.90303 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
+					template += `<button title="Auto Play" type="button" id="${class_initials}-auto-play">${slideshow_icon_play}</button>`; 
+					template += `<button  title="Toggle Sidebar" type="button" id="${class_initials}-show-sidebar"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5625 0H17V7.4375H9.5625V0Z" fill="white" /><path d="M0 0H7.4375V7.4375H0V0Z" fill="white"/><path d="M9.5625 9.5625H17V17H9.5625V9.5625Z" fill="white"/><path d="M0 9.5625H7.4375V17H0V9.5625Z" fill="white"/></svg></button>`; 
+					template += `<button title="Previous Slide" type="button" id="${class_initials}-prev"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.37093 1.21777L1.09583 10.1912M9.37093 17.8088L1.09583 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
+					template += `<button title="Next Slide" type="button" id="${class_initials}-next"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.62677 1.21777L9.90187 10.1912M1.62677 17.8088L9.90187 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
+					template += `<button  title="Close" type="button" id="${class_initials}-close"><svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6484 1.21777L9.3733 10.1912M17.6484 17.8088L9.3733 8.83535M1.62793 1.21777L9.90303 10.1912M1.62793 17.8088L9.90303 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
 				template += `</div>`;
 			template += `</div>`;
 
@@ -366,18 +539,6 @@
 		// ------------------------------------------------------------------
 		$(`#${class_initials}-total-items`).text(total_items);
 
-	}
-
-	function show_gallery_modal(){
-		
-		$(`${class_initials}`).show();
-		$('body').css('overflow', 'hidden');
-	}
-
-
-	function close_gallery_modal(){
-		$(`#${class_initials}`).remove();
-		$('body').css('overflow', '');
 	}
 
 
@@ -689,6 +850,12 @@
 		
 
 	} // calculate_slider_width
+
+	
+	// function auto_play(){
+		
+		
+	// }
 
 
 	function get_proper_slide_number(slide_number){

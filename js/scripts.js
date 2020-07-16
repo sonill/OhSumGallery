@@ -10,7 +10,7 @@
 	let caption_style = 'sidebar'; // sidebar, bottom
 	let show_header = 1;
 	let show_sidebar = 1;
-	let animation_speed = 400;
+	let animation_speed = 100;
 	let slideshow_speed = 3000;
 	
 	let window_width = 0;
@@ -24,7 +24,9 @@
 	let total_items = 0;
 	let $gallery_items = '';
 	let gallery_name = '';
-	let $main_container = '';
+
+	let $main_container;
+	let $slider;
 	
 	let settings =  '';
 
@@ -67,6 +69,7 @@
 			init($(this));
 			
 			$main_container  = $(`#${class_initials}`);
+			$slider = $(`#${class_initials}-slider`);
 			
 			// open gallery modal
 			$main_container.show();
@@ -74,6 +77,8 @@
 			
 			window_width = $(window).width();
 			window_height = $(window).height();
+
+			// $(`#${class_initials}-slider`).addClass('slide-left');
 
 			// load and switch to correct slide
 			load_slide();
@@ -299,7 +304,9 @@
 				// scroll page right or left programatically
 				// ------------------------------------------------------------------
 				
-				$(this).scrollLeft( window_width + page_X_diff );
+				// $(this).scrollLeft( window_width + page_X_diff );
+
+				$slider.css('transform', `translateX(${ (window_width * -1) + ( page_X_diff * -1) }px)` );
 
 			}
 		})
@@ -311,12 +318,12 @@
 			let please_change_slide = 0;
 			
 			// update current slide
-			if( page_X_diff > 50  ){
+			if( page_X_diff > 25  ){
 				older_slide = current_slide;
 				current_slide = get_proper_slide_number(current_slide + 1);
 				please_change_slide = 1;
 			}
-			else if( page_X_diff < -50  ){
+			else if( page_X_diff < -25  ){
 				older_slide = current_slide;
 				current_slide = get_proper_slide_number(current_slide - 1);
 				please_change_slide = 1;
@@ -324,7 +331,7 @@
 
 			if( please_change_slide ){
 
-				let slide_offset_val = ( page_X_diff < 0 ) ? ( (window_width * 3) - 1360 + page_X_diff ) : page_X_diff;
+				let slide_offset_val = page_X_diff; // (window_width * -1) + ( page_X_diff * -1); //( page_X_diff < 0 ) ? ( (window_width * 3) - 1360 + page_X_diff ) : page_X_diff;
 
 				load_slide( slide_offset_val  );
 
@@ -334,6 +341,7 @@
 	);
 
 	
+
 	// -----------------------------------------------------------------------
 
 
@@ -369,7 +377,7 @@
 				template += `<div id="${class_initials}-sidebar"><div id="${class_initials}-sidebar-wrapper"></div></div>`; 
 
 				// image-container
-				template += `<div id="${class_initials}-slider-container"><ul id="${class_initials}-slider"></ul></div>`; 
+				template += `<div id="${class_initials}-slider-container"><ul id="${class_initials}-slider" ></ul></div>`; 
 
 			template += `</div>`;
 			template += `</div</div>`;
@@ -393,7 +401,6 @@
 			// ------------------------------------------------------------------
 
 			$(this).attr('data-ohsum_id', items_counter );
-
 
 
 			// ------------------------------------------------------------------
@@ -423,6 +430,12 @@
 
 	}
 
+
+	// ------------------------------------------------------------------
+	// generate correct side markups
+	// switch to corrent slide with animation
+	// swtich to correct thumbnail in sidebar with animation
+	// ------------------------------------------------------------------
 
 	function load_slide(scroll_left_pos = 0){
 
@@ -483,55 +496,56 @@
 				$(`#${class_initials}-slider`).append(slider_contents);
 
 			}
+			
 
-			// remove unwanted slides
-			$slides_to_remove.remove();
+			// ------------------------------------------------------------------
+			// figureout if it needs to scoll left or right
+			// ------------------------------------------------------------------
+
+			if(  scroll_left_pos == 0 ){
+				
+				// if scroll_left_pos was not defined by other callback function
+				if( current_slide - older_slide == -1  || (older_slide == 1 && current_slide == total_items ) ) {
+					
+					// swipe to right
+					slide_animation('right', (window_width*2)*-1 );
+					
+				}
+				else{
+
+					// swipe to left
+					slide_animation('left', 0 );
+			
+				}
+			}
+			else{
+
+				// drag and swipe
+				
+				if( page_X_diff > 25  ){
+					//swipe to left
+					slide_animation('left', page_X_diff * -1);
+				}
+				else {
+
+					// swipe to right
+					slide_animation('right', ((window_width * 2)  + page_X_diff) * -1 );
+
+				}
+
+			}
 			
 		}
-		
 
 		// recalculate slider width
 		calculate_slider_width();
 
 
 		// ------------------------------------------------------------------
-		// figureout if it needs to scoll left or right
-		// ------------------------------------------------------------------
-
-		if(  scroll_left_pos == 0 ){
-			
-			// if scroll_left_pos was not defined by other callback function
-			if( current_slide - older_slide == -1  || (older_slide == 1 && current_slide == total_items ) ) {
-				// slide smoothly from left 
-				scroll_left_pos = window_width * 3;
-			}
-		}
-
-
-		// slide to correct slide with animation
-		$(`#${class_initials}-slider-container`)
-			.scrollLeft( scroll_left_pos )
-			.animate({
-				scrollLeft : window_width
-			}, animation_speed,  function(){
-
-				// bydefault, caption is invisible
-				// make it visible
-
-				$(`#${class_initials}-slide-${current_slide} .caption`).addClass('show-caption');
-
-				// release lock
-				slide_is_changing = 0;
-				
-			})
-			
-
-
-		// ------------------------------------------------------------------
 		// enable button
 		// ------------------------------------------------------------------
 
-		$(`#${class_initials}-buttons button`).prop('disabled', false);
+		// $(`#${class_initials}-buttons button`).prop('disabled', false);
 
 
 		if( older_slide != current_slide && !resize_window ) {
@@ -542,11 +556,11 @@
 
 			// select images which are not already loaded
 			let $current_slide_img = $(`#${class_initials}-slide-${current_slide} img:not(.loaded`);
-			let large_image = $current_slide_img.attr('data-src');
+			let large_image = $current_slide_img.attr('src');
 
 			$current_slide_img
-				.attr('src', large_image)
-				.removeAttr('data-src')
+				// .attr('src', large_image)
+				// .removeAttr('src')
 				.load(function(){
 
 					// mark image as loaded
@@ -570,6 +584,7 @@
 			$(`#${class_initials}-current-items`).text(current_slide);
 
 		}
+
 
 		// ------------------------------------------------------------------
 		// auto scroll sidebar thumbnails
@@ -602,8 +617,90 @@
 
 		}
 
+
+		// slide_animation function should be inside this function for variable scrope reasons
+		function slide_animation(direction, slide_offset){
+
+			let animation_complete = 0;
+			const element = document.getElementById(class_initials + '-slider' ); 
+			let compare_width = (window_width*-1); // negative value of current width
+	
+			// remove unwanted slide
+			$slides_to_remove.remove();
+	
+			// run animation
+			window.requestAnimationFrame(step);
+			function step() {
+			
+				if( direction == 'right' ){
+					
+					// swipe to right
+	
+					// formula for correct swipe animation
+					if (slide_offset <= compare_width ) { 
+						
+						// round figure
+						if( slide_offset + animation_speed >=  compare_width) slide_offset = compare_width;
+	
+						// use css for hardware acceleration
+						element.style.transform = 'translateX(' + slide_offset + 'px)';
+	
+						// increase counter
+						slide_offset += animation_speed;
+						
+						// call animation again
+						window.requestAnimationFrame(step);
+					}
+					else{
+						// animation complete
+						animation_complete = 1;
+					}
+	
+				}
+				else{
+	
+					// swipe to left
+	
+					// formula for correct swipe animation
+					if (slide_offset >= compare_width ) { 
+						
+						// round figure
+						if( slide_offset -animation_speed <=  compare_width ) slide_offset = compare_width;
+	
+						// use css for hardware acceleration
+						element.style.transform = 'translateX(' + slide_offset + 'px)';
+	
+						// decrease counter
+						slide_offset -= animation_speed;
+						
+						// call animation again
+						window.requestAnimationFrame(step);
+					}
+					else{
+						// animation complete
+						animation_complete = 1;
+					}
+	
+				}
+	
+				if( animation_complete ){
+	
+					// show caption after animation is complete
+					$(`#${class_initials}-slide-${current_slide} .caption`).addClass('show-caption');
+		
+					// release slide lock
+					slide_is_changing = 0;
+				}
+	
+			}
+	
+	
+		}
+
 	}
 
+
+	
 
 
 	function slide_template(new_slide_id) {
@@ -613,8 +710,8 @@
 		if( caption === undefined || caption.length < 1 ) caption = '';
 
 		let temp_slider_contents = '';
-			temp_slider_contents += `<li data-id="${new_slide_id}" id="${class_initials}-slide-${new_slide_id}" style="width:${window_width}px;" >`;
-			temp_slider_contents += `<div class="image loading"><img data-src="${ $temp_selector.attr('href')}" >`;
+			temp_slider_contents += `<li data-id="${new_slide_id}" id="${class_initials}-slide-${new_slide_id}" >`;
+			temp_slider_contents += `<div class="image loading"><img src="${ $temp_selector.attr('href')}" >`;
 			temp_slider_contents += `<div class="caption">${caption}</div>`;				
 			temp_slider_contents += `</div></li>`;
 
@@ -675,19 +772,6 @@
 				$(`#${class_initials}-sidebar-wrapper`).css('width', '');
 			}
 
-
-			// ------------------------------------------------------------------
-			// set width of slider ul
-			// ------------------------------------------------------------------
-	
-			$(`#${class_initials}-slider`).width( manual_total_items * window_width);
-	
-
-			// ------------------------------------------------------------------
-			// update width of slider li
-			// ------------------------------------------------------------------
-
-			$(`#${class_initials}-slider li`).css('width', window_width);
 
 		}
 

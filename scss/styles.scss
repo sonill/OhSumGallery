@@ -345,7 +345,7 @@ body{
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
-	transition: 0.5s;
+	width: calc(3*100vw);
 
 	li{
 		float: left;
@@ -353,6 +353,7 @@ body{
 		padding: 0 ;
 		list-style: none;
 		height : calc(100vh - #{$slider_v_margin});
+		width: 100vw;
 		position: relative;
 		transform: translateX(0);
 		transition: 0.4s;
@@ -389,13 +390,13 @@ body{
 		}
 
 
-		.image.loading{
+		// .image.loading{
 
-			img{
-				opacity: 0;
-			}
+		// 	img{
+		// 		opacity: 0;
+		// 	}
 
-		}
+		// }
 
 		.caption{
 			color: #fff;
@@ -422,7 +423,10 @@ body{
 		}
 
 	}
+
+
 }
+
 
 
 @keyframes fade_in {

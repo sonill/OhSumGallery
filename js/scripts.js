@@ -10,7 +10,7 @@
 	let caption_style = 'sidebar'; // sidebar, bottom
 	let show_header = 1;
 	let show_sidebar = 1;
-	let  animation_speed = 600;
+	let animation_speed = 400;
 	let slideshow_speed = 3000;
 	
 	let window_width = 0;
@@ -20,6 +20,7 @@
 	
 	let older_slide = 0;
 	let current_slide = 1;
+
 	let total_items = 0;
 	let $gallery_items = '';
 	let gallery_name = '';
@@ -28,10 +29,11 @@
 	let settings =  '';
 
 	let resize_window = 0; // required. notifies if window was resized. prevents duplicates
-
 	let mouse_move_timer;
 	let slideshow_loop
 	let slide_show_running = 0;
+	let slide_is_changing = 0; // slide change animation 
+	let slideshow_counter = 1;
 	
 
 	// for debug
@@ -62,13 +64,13 @@
 		
 			// generate markups
 			init($(this));
-
+			
+			$main_container  = $(`#${class_initials}`);
 			
 			// open gallery modal
-			show_gallery_modal();
-
-			$main_container  = $(`#${class_initials}`);
-
+			$main_container.show();
+			$('body').css('overflow', 'hidden');
+			
 			window_width = $(window).width();
 			window_height = $(window).height();
 
@@ -118,7 +120,7 @@
 
 
 	// ------------------------------------------------------------------
-	// autoplay button
+	// autoplay / slideshow button
 	// ------------------------------------------------------------------
 
 	$('body').on('click', `#${class_initials}-auto-play`, function(){
@@ -147,12 +149,11 @@
 			show_hide_sidebar(1);
 
 			// change slideshow icon
-			$autoplay_btn.html(slideshow_icon_play);
+			$autoplay_btn.html(slideshow_icon_play).attr('title', 'Auto Play');
 
 			
 		}
 		else{
-
 
 			// slideshow is not running
 			slide_show_running = 1;
@@ -166,18 +167,21 @@
 
 			
 			// change slideshow icon
-			$autoplay_btn.html(slideshow_icon_pause);
+			$autoplay_btn.html(slideshow_icon_pause).attr('title', 'Pause');;
 
 
 			// start slideshow
-			let i = current_slide;
 			slideshow_loop = setInterval(function(){
 				
 				// simulate next button click
 				$(`#${class_initials}-next`).click();
-				i++;
+				slideshow_counter++;
 
-				if( i == total_items ) {
+				if( slideshow_counter == total_items ) {
+
+					// reset counter
+					slideshow_counter = 1;
+					
 					clearInterval(slideshow_loop);
 
 					slide_show_running = 0;
@@ -204,8 +208,6 @@
 
 				if( !slide_show_running ) return;
 
-				log('asdf');
-
 				// show header again
 				show_hide_header(1);
 				
@@ -225,39 +227,8 @@
 			
 		}
 		
-		
-		
-		
 			
 	})
-
-
-	function show_hide_header(show_or_hide){
-
-		show_header = show_or_hide;
-
-		if( show_header ){
-			$main_container.addClass('show-header');
-		}
-		else{
-			$main_container.removeClass('show-header');
-		}
-	}
-
-
-	function show_hide_sidebar(show_or_hide){
-
-		show_sidebar = show_or_hide;
-		if( show_sidebar ){
-			$main_container.addClass('has-sidebar');
-		}
-		else{
-			$main_container.removeClass('has-sidebar');
-		}
-	}
-
-
-	
 
 
 	// ------------------------------------------------------------------
@@ -280,18 +251,12 @@
 	// close button
 	// ------------------------------------------------------------------
 	$('body').on('click', `#${class_initials}-close`, function(){
-		close_gallery_modal();
-	})
 
+		older_slide = 0;
+		current_slide = 1;
 
-	// ------------------------------------------------------------------
-	// disable buttons after click
-	// ------------------------------------------------------------------
-	$('body').on('click', `#${class_initials}-buttons button:not(#wprlbg-show-sidebar)`, function(){
-
-		// disable button 
-		$(this).prop('disabled', true);
-		
+		$main_container.remove();
+		$('body').css('overflow', '');
 	})
 
 
@@ -300,6 +265,8 @@
 	// ------------------------------------------------------------------
 
 	$('body').on('click', `#${class_initials}-prev`, function(){
+
+		if( slide_is_changing ) return;
 		
 		// update older and current slide number
 		older_slide = current_slide;
@@ -314,6 +281,8 @@
 	// ------------------------------------------------------------------
 
 	$('body').on('click', `#${class_initials}-next`, function(){
+
+		if( slide_is_changing ) return;
 		
 		// update older and current slide number
 		older_slide = current_slide;
@@ -331,20 +300,27 @@
 
 	$(`body`).keydown(function(e){
 
+		if( slide_is_changing ) return;
+
 		older_slide = current_slide;
 
-		// update current slide
-		if( e.which == 39 && $(`#${class_initials}`).length > 0 ){
-			// right arrow
-			current_slide = get_proper_slide_number( current_slide + 1);
-		}
-		else if( e.which == 37  && $(`#${class_initials}`).length > 0 ){
-			// left arrow
-			current_slide = get_proper_slide_number( current_slide - 1);
+		if( (e.which == 37 ||  e.which == 39) && ( $(`#${class_initials}`).length > 0 ) ){
+			
+			// update current slide
+			if( e.which == 39 ){
+				// right arrow
+				current_slide = get_proper_slide_number( current_slide + 1);
+			}
+			else if( e.which == 37 ){
+				// left arrow
+				current_slide = get_proper_slide_number( current_slide - 1);
+			}
+
+			// change slide with animation
+			load_slide();
+
 		}
 
-		// change slide with animation
-		load_slide();
 
 	});
 
@@ -443,17 +419,6 @@
 	
 	// -----------------------------------------------------------------------
 
-	function show_gallery_modal(){
-		
-		$(`${class_initials}`).show();
-		$('body').css('overflow', 'hidden');
-	}
-
-
-	function close_gallery_modal(){
-		$(`#${class_initials}`).remove();
-		$('body').css('overflow', '');
-	}
 
 
 	function init($this){
@@ -544,6 +509,9 @@
 
 	function load_slide(scroll_left_pos = 0){
 
+		// lock animation and slide change
+		slide_is_changing = 1;
+
 
 		// ------------------------------------------------------------------
 		// generate slider contents
@@ -605,7 +573,6 @@
 		}
 		
 
-
 		// recalculate slider width
 		calculate_slider_width();
 
@@ -636,13 +603,18 @@
 
 				$(`#${class_initials}-slide-${current_slide} .caption`).addClass('show-caption');
 
-			// ------------------------------------------------------------------
-			// enable button
-			// ------------------------------------------------------------------
+				// release lock
+				slide_is_changing = 0;
+				
+			})
+			
 
-			$(`#${class_initials}-buttons button`).prop('disabled', false);
 
-		})
+		// ------------------------------------------------------------------
+		// enable button
+		// ------------------------------------------------------------------
+
+		$(`#${class_initials}-buttons button`).prop('disabled', false);
 
 
 		if( older_slide != current_slide && !resize_window ) {
@@ -734,8 +706,9 @@
 	}
 
 
+	function calculate_slider_width( args=[]){
 
-	function calculate_slider_width(manual_total_items = 3){
+		let manual_total_items = (args['manual_total_items'] === undefined) ? 3 : args['manual_total_items'];
 
 		// ------------------------------------------------------------------
 		// calculate width of slider list items
@@ -747,7 +720,7 @@
 
 
 		let resized = 0;
-		if(  previous_window_height != window_height || previous_window_width != window_width ){
+		if( older_slide == 0 || previous_window_height != window_height || previous_window_width != window_width ){
 			resized = 1;
 		}
 
@@ -852,11 +825,6 @@
 	} // calculate_slider_width
 
 	
-	// function auto_play(){
-		
-		
-	// }
-
 
 	function get_proper_slide_number(slide_number){
 		if( slide_number < 1 ) return total_items;
@@ -864,9 +832,37 @@
 		return slide_number;
 	}
 
+
 	function log(msg){
 		if(show_log) console.log(msg);
 	}
+
+
+	function show_hide_header(show_or_hide){
+
+		show_header = show_or_hide;
+
+		if( show_header ){
+			$main_container.addClass('show-header');
+		}
+		else{
+			$main_container.removeClass('show-header');
+		}
+	}
+
+
+	function show_hide_sidebar(show_or_hide){
+
+		show_sidebar = show_or_hide;
+
+		if( show_sidebar ){
+			$main_container.addClass('has-sidebar');
+		}
+		else{
+			$main_container.removeClass('has-sidebar');
+		}
+	}
+
 
 })( jQuery );
 

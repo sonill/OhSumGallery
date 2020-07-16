@@ -356,7 +356,7 @@ body{
 		img{
 			height: auto;
 			border-radius: 5px;
-			max-height: 100%;
+			max-height: calc(100vh - #{$header_height} - #{$slider_v_margin});
 			display: block;
 			user-select: none;
 		}

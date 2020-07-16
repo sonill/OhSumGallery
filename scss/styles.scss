@@ -70,6 +70,15 @@ body{
 		}
 	}
 
+	#wprlbg-auto-play{
+		
+		path.play-pause-path {
+			fill: #fff;
+			stroke-width: 0;
+		}
+
+	}
+
 	#wprlbg-slider li .caption{
 		color: #a0a0a0;
 
@@ -130,6 +139,15 @@ body{
 		path{
 			fill : #000;
 		}
+	}
+
+	#wprlbg-auto-play{
+		
+		path.play-pause-path {
+			fill: black;
+			stroke-width: 0;
+		}
+
 	}
 
 	#wprlbg-slider li .caption{
@@ -282,6 +300,8 @@ body{
 	#wprlbg-close:hover path{
 		stroke:red !important;
 	}
+
+
 }
 
 #wprlbg-sidebar{
@@ -516,6 +536,10 @@ body{
 			background: #f7f7f7;
 		}
 
+		.wprlbg-thumbnail.active {
+			border-color: #000;
+		}
+
 	}
 
 	// no sidebar
@@ -541,8 +565,6 @@ body{
 			padding: 0 15px;
 			overflow-y: auto;
 			height: 100vh; // 10px header margin 
-			// display: flex;
-			// align-items: center;
 
 			/* width */
 			&::-webkit-scrollbar {

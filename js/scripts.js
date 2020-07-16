@@ -6,7 +6,7 @@
 	const slide_margin = 20;
 	
 	// plugin options
-	const theme_style = 'dark'; // dark, light
+	const theme_style = 'light'; // dark, light
 	let caption_style = 'sidebar'; // sidebar, bottom
 	let show_header = 1;
 	let show_sidebar = 1;
@@ -30,10 +30,10 @@
 
 	let resize_window = 0; // required. notifies if window was resized. prevents duplicates
 	let mouse_move_timer;
-	let slideshow_loop
+	let slideshow_loop;
 	let slide_show_running = 0;
 	let slide_is_changing = 0; // slide change animation 
-	let slideshow_counter = 1;
+	
 	
 
 	// for debug
@@ -41,9 +41,10 @@
 
 	let $autoplay_btn;
 
-	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><path d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
+	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><path class="play-pause-path" d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
 
-	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18C4.80558 18 1 14.1944 1 9.5Z" stroke="white" stroke-width="2"/><rect x="10.6667" y="5" width="2.33333" height="9" fill="white"/><rect x="6" y="5" width="2.33333" height="9" fill="white"/></svg>';
+	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="play-pause-path" d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><rect x="6" y="6" width="7" height="7" fill="white"/></svg>';
+	
 	
 
 
@@ -128,102 +129,15 @@
 		$autoplay_btn = $(this);
 
 		if( slide_show_running ){
-			// slide show is running
-
-			// ------------------------------------------------------------------
-			// pause or stop slideshow
-			// ------------------------------------------------------------------
 			
-			slide_show_running = 0;
-				
 			// stop slideshow
-			clearInterval(slideshow_loop);
-
-			// clear mouse move actions
-			clearTimeout(mouse_move_timer);
-
-			// show header
-			show_hide_header(1);
-
-			// show sidebar
-			show_hide_sidebar(1);
-
-			// change slideshow icon
-			$autoplay_btn.html(slideshow_icon_play).attr('title', 'Auto Play');
-
+			stop_slideshow();
 			
 		}
 		else{
 
-			// slideshow is not running
-			slide_show_running = 1;
-
-			// hide header
-			show_hide_header(0);
-
-
-			// hide sidebar
-			show_hide_sidebar(0);
-
-			
-			// change slideshow icon
-			$autoplay_btn.html(slideshow_icon_pause).attr('title', 'Pause');;
-
-
 			// start slideshow
-			slideshow_loop = setInterval(function(){
-				
-				// simulate next button click
-				$(`#${class_initials}-next`).click();
-				slideshow_counter++;
-
-				if( slideshow_counter == total_items ) {
-
-					// reset counter
-					slideshow_counter = 1;
-					
-					clearInterval(slideshow_loop);
-
-					slide_show_running = 0;
-				
-					// ------------------------------------------------------------------
-					// slideshow complete
-					// ------------------------------------------------------------------
-
-					// change slideshow icon
-					$autoplay_btn.html(slideshow_icon_play);
-
-					// show header
-					show_hide_header(1);
-
-					// show sidebar
-					show_hide_sidebar(1);
-				}
-
-			}, slideshow_speed);
-
-
-			// show header if mouse moves
-			$('body').on('mousemove', $main_container, function(){
-
-				if( !slide_show_running ) return;
-
-				// show header again
-				show_hide_header(1);
-				
-				if (mouse_move_timer !== undefined ) {
-					window.clearTimeout(mouse_move_timer);
-				}
-				
-				mouse_move_timer = window.setTimeout(function(){
-					
-					// if mouse does not move for 5 second 
-					// hide header again
-					show_hide_header(0);
-					
-				}, 3000)
-
-			})
+			start_slideshow();
 			
 		}
 		
@@ -254,6 +168,9 @@
 
 		older_slide = 0;
 		current_slide = 1;
+
+		// close slideshow (if running)
+		stop_slideshow();
 
 		$main_container.remove();
 		$('body').css('overflow', '');
@@ -771,7 +688,6 @@
 			// ------------------------------------------------------------------
 
 			$(`#${class_initials}-slider li`).css('width', window_width);
-		
 
 		}
 
@@ -824,7 +740,6 @@
 
 	} // calculate_slider_width
 
-	
 
 	function get_proper_slide_number(slide_number){
 		if( slide_number < 1 ) return total_items;
@@ -835,6 +750,108 @@
 
 	function log(msg){
 		if(show_log) console.log(msg);
+	}
+
+
+	function stop_slideshow(){
+		// ------------------------------------------------------------------
+		// stop slideshow
+		// ------------------------------------------------------------------
+		
+		slide_show_running = 0;
+			
+		// stop slideshow
+		clearInterval(slideshow_loop);
+
+		// clear mouse move actions
+		clearTimeout(mouse_move_timer);
+
+		// show header
+		show_hide_header(1);
+
+		// show sidebar
+		show_hide_sidebar(1);
+
+		// change slideshow icon
+		$autoplay_btn.html(slideshow_icon_play).attr('title', 'Auto Play');
+	}
+
+
+	function start_slideshow(){
+
+		// ------------------------------------------------------------------
+		// start slideshow
+		// ------------------------------------------------------------------
+
+		slide_show_running = 1;
+
+		// hide header
+		show_hide_header(0);
+
+
+		// hide sidebar
+		show_hide_sidebar(0);
+
+		
+		// change slideshow icon
+		$autoplay_btn.html(slideshow_icon_pause).attr('title', 'Pause');;
+
+
+		// start slideshow
+		let slideshow_counter = 1;
+		slideshow_loop = setInterval(function(){
+			
+			// simulate next button click
+			$(`#${class_initials}-next`).click();
+			slideshow_counter++;
+
+			if( slideshow_counter == total_items ) {
+
+				// reset counter
+				slideshow_counter = 1;
+				
+				clearInterval(slideshow_loop);
+
+				slide_show_running = 0;
+			
+				// ------------------------------------------------------------------
+				// slideshow complete
+				// ------------------------------------------------------------------
+
+				// change slideshow icon
+				$autoplay_btn.html(slideshow_icon_play);
+
+				// show header
+				show_hide_header(1);
+
+				// show sidebar
+				show_hide_sidebar(1);
+			}
+
+		}, slideshow_speed);
+
+
+		// show header if mouse moves
+		$('body').on('mousemove', $main_container, function(){
+
+			if( !slide_show_running ) return;
+
+			// show header again
+			show_hide_header(1);
+			
+			if (mouse_move_timer !== undefined ) {
+				window.clearTimeout(mouse_move_timer);
+			}
+			
+			mouse_move_timer = window.setTimeout(function(){
+				
+				// if mouse does not move for 5 second 
+				// hide header again
+				show_hide_header(0);
+				
+			}, 3000)
+
+		})
 	}
 
 

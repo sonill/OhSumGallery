@@ -6,11 +6,12 @@
 	const slide_margin = 20;
 	
 	// plugin options
-	const theme_style = 'light'; // dark, light
-	let caption_style = 'sidebar'; // sidebar, bottom
+	const theme_style = 'dark'; // dark, light
+	let caption_style = 'bottom'; // sidebar, bottom
 	let show_header = 1;
 	let show_sidebar = 1;
-	let animation_speed = 100;
+
+	let animation_speed = 70;
 	let slideshow_speed = 3000;
 	
 	let window_width = 0;
@@ -27,6 +28,7 @@
 
 	let $main_container;
 	let $slider;
+	let $slides_to_remove = '';
 	
 	let settings =  '';
 
@@ -42,9 +44,7 @@
 	let show_log = 1;
 
 	let $autoplay_btn;
-
 	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><path class="play-pause-path" d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
-
 	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="play-pause-path" d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><rect x="6" y="6" width="7" height="7" fill="white"/></svg>';
 	
 	
@@ -68,7 +68,7 @@
 			// generate markups
 			init($(this));
 			
-			$main_container  = $(`#${class_initials}`);
+			$main_container  = $(`#${class_initials}-container`);
 			$slider = $(`#${class_initials}-slider`);
 			
 			// open gallery modal
@@ -111,15 +111,17 @@
 
 	$('body').on('click', `#${class_initials}-show-sidebar`, function(){
 
-		show_sidebar = ( show_sidebar ) ? 0 : 1;
+		// show_sidebar = ( show_sidebar ) ? 0 : 1;
 
-		// add class in main container
-		if( show_sidebar ){
-			$(`#${class_initials}`).addClass('has-sidebar');
-		}
-		else{
-			$(`#${class_initials}`).removeClass('has-sidebar');
-		}
+		// // add class in main container
+		// if( show_sidebar ){
+		// 	$(`#${class_initials}`).addClass('has-sidebar');
+		// }
+		// else{
+		// 	$(`#${class_initials}`).removeClass('has-sidebar');
+		// }
+
+		show_hide_sidebar( !show_sidebar );
 		
 		calculate_slider_width();
 	})
@@ -177,7 +179,7 @@
 		// close slideshow (if running)
 		stop_slideshow();
 
-		$main_container.remove();
+		$(`#${class_initials}`).remove();
 		$('body').css('overflow', '');
 	})
 
@@ -328,12 +330,19 @@
 				current_slide = get_proper_slide_number(current_slide - 1);
 				please_change_slide = 1;
 			}
+			else{
+				
+				// reposition slide to center
+				// $slider.css('transform', `translateX(${ (window_width * -1) + ( page_X_diff * -1) }px)` );
+
+				slide_animation('left', (window_width * -1) + ( page_X_diff * -1) );
+			}
 
 			if( please_change_slide ){
 
-				let slide_offset_val = page_X_diff; // (window_width * -1) + ( page_X_diff * -1); //( page_X_diff < 0 ) ? ( (window_width * 3) - 1360 + page_X_diff ) : page_X_diff;
+				let animation_start_point_val = page_X_diff; // (window_width * -1) + ( page_X_diff * -1); //( page_X_diff < 0 ) ? ( (window_width * 3) - 1360 + page_X_diff ) : page_X_diff;
 
-				load_slide( slide_offset_val  );
+				load_slide( animation_start_point_val  );
 
 			}
 
@@ -352,8 +361,8 @@
 		// generate required markups
 		// ------------------------------------------------------------------
 
-		let template = `<div id="${class_initials}" class="${class_initials}-wrapper ${(show_sidebar) ? 'has-sidebar' : ''} ${(show_header) ? 'show-header' : ''} caption-in-${caption_style} ${theme_style}-theme">`;
-			template += `<div id="${class_initials}-container">`;
+		let template = `<div id="${class_initials}" class="caption-in-${caption_style} ${theme_style}-theme" >`;
+			template += `<div id="${class_initials}-container" class=" ${(show_sidebar) ? 'has-sidebar' : ''} ${(show_header) ? 'show-header' : ''} " >`;
 
 			// header
 			template += `<div id="${class_initials}-header">`; 
@@ -447,12 +456,12 @@
 		// generate slider contents
 		// ------------------------------------------------------------------
 
-		let $slides_to_remove = '';
+		// let $slides_to_remove = '';
 
 		if( older_slide != current_slide && !resize_window ) {
 
 			// make all caption invisible
-			$(`#${class_initials}-slider .caption`).removeClass('show-caption');
+			// $(`#${class_initials}-slider .caption`).removeClass('show-caption');
 
 				
 			// ------------------------------------------------------------------
@@ -617,92 +626,95 @@
 
 		}
 
-
-		// slide_animation function should be inside this function for variable scrope reasons
-		function slide_animation(direction, slide_offset){
-
-			let animation_complete = 0;
-			const element = document.getElementById(class_initials + '-slider' ); 
-			let compare_width = (window_width*-1); // negative value of current width
+		
+	}
 	
-			// remove unwanted slide
-			$slides_to_remove.remove();
-	
-			// run animation
-			window.requestAnimationFrame(step);
-			function step() {
-			
-				if( direction == 'right' ){
+	function slide_animation(direction, animation_start_point){
+
+		let animation_complete = 0;
+		const element = document.getElementById(class_initials + '-slider' ); 
+		let animation_end_point = (window_width*-1); // get negative value of current width
+
+		// remove unwanted slide
+		$slides_to_remove.remove();
+
+		log('direction = ' + direction);
+		log('animation_start_point = ' + animation_start_point);
+		log('animation_end_point = ' + animation_end_point);
+
+		let frame_rate = (animation_start_point + animation_end_point) / 20;
+
+		// run animation
+		window.requestAnimationFrame(step);
+		function step() {
+		
+			if( direction == 'right' ){
+				
+				// swipe to right
+
+				// formula for correct swipe animation
+				if (animation_start_point <= animation_end_point ) { 
 					
-					// swipe to right
-	
-					// formula for correct swipe animation
-					if (slide_offset <= compare_width ) { 
-						
-						// round figure
-						if( slide_offset + animation_speed >=  compare_width) slide_offset = compare_width;
-	
-						// use css for hardware acceleration
-						element.style.transform = 'translateX(' + slide_offset + 'px)';
-	
-						// increase counter
-						slide_offset += animation_speed;
-						
-						// call animation again
-						window.requestAnimationFrame(step);
-					}
-					else{
-						// animation complete
-						animation_complete = 1;
-					}
-	
+					// round figure
+					if( animation_start_point + animation_speed >=  animation_end_point) animation_start_point = animation_end_point;
+
+					// use css for hardware acceleration
+					element.style.transform = 'translateX(' + animation_start_point + 'px)';
+
+					// increase counter
+					// animation_start_point += animation_speed;
+					animation_start_point -= frame_rate;
+					
+					// call animation again
+					window.requestAnimationFrame(step);
 				}
 				else{
-	
-					// swipe to left
-	
-					// formula for correct swipe animation
-					if (slide_offset >= compare_width ) { 
-						
-						// round figure
-						if( slide_offset -animation_speed <=  compare_width ) slide_offset = compare_width;
-	
-						// use css for hardware acceleration
-						element.style.transform = 'translateX(' + slide_offset + 'px)';
-	
-						// decrease counter
-						slide_offset -= animation_speed;
-						
-						// call animation again
-						window.requestAnimationFrame(step);
-					}
-					else{
-						// animation complete
-						animation_complete = 1;
-					}
-	
+					// animation complete
+					animation_complete = 1;
 				}
-	
-				if( animation_complete ){
-	
-					// show caption after animation is complete
-					$(`#${class_initials}-slide-${current_slide} .caption`).addClass('show-caption');
-		
-					// release slide lock
-					slide_is_changing = 0;
-				}
-	
+
 			}
+			else{
+
+				// swipe to left
+
+				// formula for correct swipe animation
+				if (animation_start_point >= animation_end_point ) { 
+					
+					// round figure
+					if( animation_start_point - animation_speed <=  animation_end_point ) animation_start_point = animation_end_point;
+
+					// use css for hardware acceleration
+					element.style.transform = 'translateX(' + animation_start_point + 'px)';
+
+					// decrease counter
+					animation_start_point += frame_rate;
+					
+					// call animation again
+					window.requestAnimationFrame(step);
+				}
+				else{
+					// animation complete
+					animation_complete = 1;
+				}
+
+			}
+
+			if( animation_complete ){
+
+				// show caption after animation is complete
+				// $(`#${class_initials}-slide-${current_slide} .caption`).addClass('show-caption');
 	
-	
+				// release slide lock
+				slide_is_changing = 0;
+			}
+
 		}
+
 
 	}
 
-
-	
-
-
+	// templates for load_slide function
 	function slide_template(new_slide_id) {
 
 		let $temp_selector = $( `a[data-ohsum="${gallery_name}"][data-ohsum_id="${new_slide_id}"]`);
@@ -720,9 +732,8 @@
 	}
 
 
+	// calculate width for responsive-ness
 	function calculate_slider_width( args=[]){
-
-		let manual_total_items = (args['manual_total_items'] === undefined) ? 3 : args['manual_total_items'];
 
 		// ------------------------------------------------------------------
 		// calculate width of slider list items
@@ -731,7 +742,6 @@
 		// new window width and height
 		window_width = $(window).width();
 		window_height = $(window).height();
-
 
 		let resized = 0;
 		if( older_slide == 0 || previous_window_height != window_height || previous_window_width != window_width ){
@@ -742,11 +752,16 @@
 		previous_window_width = window_width;
 		previous_window_height = window_height;
 
+		let $cur_slide_sel = $(`#${class_initials}-slide-${current_slide}`);
+
+		// remove flex class for caption height calculation
+		$cur_slide_sel.removeClass('flex');
+
 		
 		if( resized  ){
 
-			if( window_width < 1200){
-				// auto change caption style in smaller devices
+			if( window_height > window_width ){
+				// auto change caption style to bottom in potrait mode
 				caption_style = 'bottom';
 			}
 
@@ -772,18 +787,16 @@
 				$(`#${class_initials}-sidebar-wrapper`).css('width', '');
 			}
 
-
 		}
-
 
 		
 		// ------------------------------------------------------------------
-		// set width of each .image div
+		// set width of .image div in currently slide
 		// ------------------------------------------------------------------
 
-		let $cur_slide_sel = $(`#${class_initials}-slide-${current_slide}`);
+		
 		let caption = $(`a[data-ohsum="${gallery_name}"][data-ohsum_id="${current_slide}"]`).data('caption'); 
-		let $caption_sel = $cur_slide_sel.find('.caption'); // $(`#${class_initials}-slide-${current_slide} .caption`);
+		let $caption_sel = $cur_slide_sel.find('.caption'); 
 		let caption_height = 0;
 
 		
@@ -795,36 +808,62 @@
 			$cur_slide_sel.addClass( 'no-caption' );
 		}
 		else{
-			caption_height = $caption_sel.outerHeight(true);
+			caption_height = $caption_sel.outerHeight();
 		}
+
+		// make this item flexbox to correct display positioning
+		$cur_slide_sel.addClass('flex');
 		
 
 		if( caption_style == 'bottom'){
+
+			// max caption height = 200px
+			if( caption_height > 200) caption_height = 200;
+
+			if( window_width < 768 ) caption_height = 70;
+
 			
 			// ------------------------------------------------------------------
 			// set max height of image
 			// ------------------------------------------------------------------
+
 			
-			if( window_width < 768 ){
-				// mobile devices or other smaller screen
+			if( window_height > window_width  ){
+				// potrait mode
+				
+				let sidebar_height = (show_sidebar) ?  70 : 0;
 
 				// set max height of image
-				$cur_slide_sel.find('img').css('max-height', `calc(100vh - 80px - ${caption_height}px)`);
+				$cur_slide_sel.find('img').css('max-height', `calc(100vh - 70px - ${sidebar_height}px - ${caption_height}px)`);
 			}
 
-			else if( window_width >= 768 ){
-				// all other screen sizes
+			else{
+				// landscape mode
 
 				// set max height of image
 				$cur_slide_sel.find('img').css('max-height', `calc(100vh - ${header_height + slide_margin}px - ${caption_height}px)`);
 			}
 			
 		}
+		else{
+
+			// ------------------------------------------------------------------
+			// caption style is SIDEBAR
+			// ------------------------------------------------------------------
+
+			// match the height of caption to the height of image
+			setTimeout(function(){
+				// give browser some time to complete the animation and render everything properly
+				let cur_image_height = $cur_slide_sel.find('img').height();
+				$caption_sel.css('max-height', cur_image_height);
+			}, animation_speed)
+		}
 		
 
 	} // calculate_slider_width
 
 
+	// get proper slide number
 	function get_proper_slide_number(slide_number){
 		if( slide_number < 1 ) return total_items;
 		else if( slide_number > total_items ) return 1;
@@ -838,9 +877,12 @@
 
 
 	function stop_slideshow(){
+
 		// ------------------------------------------------------------------
 		// stop slideshow
 		// ------------------------------------------------------------------
+
+		if( !slide_show_running ) return;
 		
 		slide_show_running = 0;
 			
@@ -872,10 +914,8 @@
 		// hide header
 		show_hide_header(0);
 
-
 		// hide sidebar
 		show_hide_sidebar(0);
-
 		
 		// change slideshow icon
 		$autoplay_btn.html(slideshow_icon_pause).attr('title', 'Pause');;
@@ -956,11 +996,15 @@
 
 		show_sidebar = show_or_hide;
 
+		// log('current_slide = ' + current_slide);
+
 		if( show_sidebar ){
 			$main_container.addClass('has-sidebar');
+			// $(`#${class_initials}-slide-${current_slide}`).addClass('flex');
 		}
 		else{
 			$main_container.removeClass('has-sidebar');
+			// $(`#${class_initials}-slide-${current_slide}`).removeClass('flex');
 		}
 	}
 

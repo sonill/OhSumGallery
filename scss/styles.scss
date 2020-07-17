@@ -2,6 +2,7 @@ $dark_color:  #171717;
 $light_color : #fff;
 $header_height: 50px;
 $slider_v_margin: 20px;
+$bottom_sidebar_height: 50px;
 
 body{
 	font-family: 'Roboto', sans-serif;
@@ -47,6 +48,8 @@ body{
 
 	#wprlbg-sidebar { 
 
+		background: #0d0d0d;
+
 		@include dark_scrollbar;
 
 	}
@@ -57,8 +60,8 @@ body{
 			stroke: #fff;
 		}
 
-		&:active{
-			background : #eee;
+		&:hover{
+			background : #494949;
 		}
 
 	}
@@ -87,7 +90,6 @@ body{
 }
 
 
-
 //  ---------------------------------------------------------------------
 // light theme
 //  ---------------------------------------------------------------------
@@ -96,7 +98,6 @@ body{
 
 	#wprlbg-header {
 		border-color: #f0f0f0;
-		// background:#ffffff80;
 	}
 
 	#wprlbg-counter {
@@ -104,6 +105,12 @@ body{
 	}
 
 	#wprlbg-sidebar { 
+
+		background: #f7f7f7;
+
+		.wprlbg-thumbnail.active {
+			border-color: #000;
+		}
 
 		&::-webkit-scrollbar-track {
 			background: $light_color;
@@ -128,7 +135,7 @@ body{
 			stroke: #000;
 		}
 
-		&:active{
+		&:hover{
 			background : #eee;
 		}
 
@@ -157,7 +164,6 @@ body{
 }
 
 
-
 //  ---------------------------------------------------------------------
 // caption style
 //  ---------------------------------------------------------------------
@@ -175,39 +181,159 @@ body{
 			margin: 0 0 15px;
 		}
 
-		p:last-child{
-			margin-bottom: 0;	
+	}
+
+	// slider with no header
+	#wprlbg-slider{
+		height: calc(100vh - #{$slider_v_margin});
+	}
+
+
+	// has header
+	#wprlbg-container.show-header {
+
+		#wprlbg-slider{
+			height: calc(100vh - #{$header_height} - #{$slider_v_margin});
+
+			li img{
+				max-height: calc(100vh - #{$header_height} - #{$slider_v_margin});
+			}
 		}
+
+	}
+
+	// no sidebar
+	#wprlbg-slider {
+		li {
+			.image{
+				margin-left: 0;
+				width: calc(100vw - 60px); // 30 px padding in both sides
+
+				// with caption
+				img{
+					max-width: calc( 100vw  - 360px);
+				}
+
+			}
+		}
+		
+		li.no-caption .image img{
+			max-width: calc( 100vw  - 60px);
+		}
+	}	
+
+	// has sidebar
+	#wprlbg-container.has-sidebar{
+
+
+		#wprlbg-slider li .image{
+			width: calc(100vw - 90px - 40px); // 40px side margin on both sides
+			margin-left: 90px;
+
+			img{
+				max-width: calc( 100vw - 90px - 370px);
+			}
+		}
+
+
+		// no caption
+		#wprlbg-slider li.no-caption .image{
+
+			img{
+				max-width: calc( 100vw - 90px - 40px);
+			}
+		}
+			
+	}
+
+	
+	#wprlbg-slider li{
+		display: flex;
+		justify-content: center;
+		
+		.image{
+			display: flex;
+			align-items: center; // vertical align
+			justify-content: center; // horizontal align
+
+			width: calc(100vw - 30px);
+
+		}
+
+		img {
+			max-width: 100%;
+		}
+
+
 	}
 }
 
 @mixin caption_in_bottom{
-	#wprlbg-slider li{
-		display: flex;
-		align-items: center; // vertical align
-		justify-content: center; // vertical align
-		height: calc(100vh - #{$header_height} - #{$slider_v_margin} );
 
-		img{
-			margin: 0 auto;
+	#wprlbg-slider{
+		
+		// with no header
+		height: calc(100vh - 20px);
+
+		li{
+			width: 100vw;
+			height: 100%;
+	
+			.image{
+				width: calc(100vw - 20px);
+			}
+
+			// .caption{
+				
+			// }
+
+			img{
+				margin: 0 auto;
+				max-width: 100%;
+			}
+	
+			.caption{
+				width: 100% !important;		
+				padding: 10px 10px 0;
+				text-align: center;
+				font-size: 14px;
+				line-height: 21px;
+	
+				p{
+					margin: 0 0 10px;
+				}
+	
+			}
+			
 		}
 
-		.caption{
-			width: 100% !important;			
-			padding: 10px 10px 0;
-			text-align: center;
-			// font-size: 16px;
+		li.flex{
 
-			// font-weight: 500;
-			font-size: 14px;
-			line-height: 21px;
-
-			p{
-				margin: 0 0 15px;
+			display: flex;
+			justify-content: center;
+			
+			.image{
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
 			}
 		}
+		
 	}
+	
+
+	// has header, no sidebar
+	// #wprlbg-container.show-header #wprlbg-slider{
+	// 	height: calc( 100vh - 20px - #{$header_height} );
+	// }
+
+
+
+	
+
+	
 }
+
 
 // default darkmode color scheme
 
@@ -259,7 +385,7 @@ body{
 		height: $header_height;
 		outline: none !important;
 		transition: 0.3s;
-		opacity: 0.5;
+		opacity: 1;
 
 		svg{
 			margin: auto;
@@ -269,14 +395,14 @@ body{
 		// 	stroke: #b9b9b9;
 		// }
 		
-		&:hover{
+		// &:hover{
 
-			opacity : 1;
+		// 	opacity : 1;
 
-			// path{
-			// 	stroke: #fff;
-			// }
-		}
+		// 	// path{
+		// 	// 	stroke: #fff;
+		// 	// }
+		// }
 
 		// &:active{
 		// 	background : #292929;
@@ -310,7 +436,7 @@ body{
 	z-index: 999;
 }
 
-#wprlbg.has-sidebar #wprlbg-sidebar{
+#wprlbg-container.has-sidebar #wprlbg-sidebar{
 	display: block;
 }
 
@@ -342,18 +468,17 @@ body{
 }
 
 #wprlbg-slider{
-	margin: 0;
+	margin: 10px 0 0 0;
 	padding: 0;
 	overflow: hidden;
 	width: calc(3*100vw);
 
 	li{
 		float: left;
-		margin: 10px 0 0 0; // 0 0 150px; 
 		padding: 0 ;
 		list-style: none;
-		height : calc(100vh - #{$slider_v_margin});
 		width: 100vw;
+		height: 100%;
 		position: relative;
 		transform: translateX(0);
 		transition: 0.4s;
@@ -377,7 +502,7 @@ body{
 		img{
 			height: auto;
 			border-radius: 5px;
-			max-height: calc(100vh - #{$header_height} - #{$slider_v_margin});
+			max-height: calc(100vh - #{$slider_v_margin});
 			display: block;
 			user-select: none;
 		}
@@ -385,49 +510,41 @@ body{
 
 		.image{
 			position: relative;
-			
+			height: 100%;
 			
 		}
 
 
 		// .image.loading{
-
 		// 	img{
 		// 		opacity: 0;
 		// 	}
-
 		// }
 
 		.caption{
 			color: #fff;
 			font-size: 18px;
 			font-weight: 300;
-			opacity: 0;
+			opacity: 1;
 			z-index: 999;
 			padding-right: 5px;
 
-			max-height: calc(100% - 60px);
+			max-height: 100%;
 			overflow: auto;
 
 			strong{
 				font-weight: bold;
 			}
 
+			p:last-child{
+				margin-bottom: 0 !important;
+			}
 
-		}
-
-		.caption.show-caption{
-			animation-name: fade_in;
-			animation-duration: 0.3s;
-			animation-fill-mode: forwards;
 		}
 
 	}
 
-
 }
-
-
 
 @keyframes fade_in {
 	from {opacity: 0;}
@@ -436,55 +553,35 @@ body{
 
 
 
-// show header ---------------------------
-#wprlbg.show-header {
+// has header -----------------------------------------------
+#wprlbg-container.show-header{
 
 	#wprlbg-header{
 		top: 0;
 		transition: 0.4s;
 	}
 
-	#wprlbg-slider li{
-		height: calc(100vh - 50px - 20px);
-		margin-top: $header_height + 10px; // 10 px top margin
-	}
 
-	#wprlbg-sidebar{
-		height: calc(100vh - 50px ) !important;
-		top: $header_height;
-	}
-}
-
-
-@media(min-width: 1200px){ // xl
-
-	// ----------------------------------------------------------------
-	// caption styles
-	// ----------------------------------------------------------------
-
-	#wprlbg.caption-in-sidebar #wprlbg-slider {
-		@include caption_in_sidebar;
+	#wprlbg-slider{
+		// height: calc(100vh - #{$header_height} - #{$slider_v_margin});
+		margin-top:calc( #{$header_height} + 10px );
 
 		li{
-			display: flex;
-			justify-content: center;
-			
-			.image{
-				display: flex;
-				align-items: center; // vertical align
-				justify-content: center; // horizontal align
-			}
+			height: 100%;
 		}
 	}
-
-	#wprlbg.caption-in-bottom {
-		@include caption_in_bottom;
-	}
 }
 
-@media(max-width: 1199px){ // lg
+
+#wprlbg.caption-in-sidebar  {
+	@include caption_in_sidebar;
+	
+}
+
+#wprlbg.caption-in-bottom {
 	@include caption_in_bottom;
 }
+
 
 @media(max-width: 767px){ // sm
 
@@ -492,13 +589,18 @@ body{
 		margin-bottom: 10px;
 	}
 
+	#wprlbg-counter{
+		padding: 0 10px;
+	}
+
+
 	#wprlbg-sidebar{
 		top: 70px;
 	}
 
 	#wprlbg-slider li {
 
-		height: calc(100vh - #{$header_height} - 20px);
+		// height: calc(100vh - 70px - #{$header_height} - #{$slider_v_margin}) !important;
 
 		.caption{
 			font-size: 14px;
@@ -509,86 +611,52 @@ body{
 			max-width: 100%; 
 		}
 	}
-	
-}
-
-
-@media(max-width: 767px ) and (orientation: portrait){ 
-
-	#wprlbg.has-sidebar #wprlbg-slider li{
-		height: calc(100vh - 80px - #{$header_height}) !important;
-	}
 
 }
 
 
-@media(max-width: 320px){ // iphone 5
+@media(max-width: 320px){ // iphone 4/5/5S
 	#wprlbg-buttons button{
-		width: 50px;
+		width: 45px;
 	}
 }
+
+
 
 // horizontal orintation
 @media (orientation: landscape) {
 
-	#wprlbg.dark-theme #wprlbg-sidebar { 
-		background: #0d0d0d;
+	// show sidebar in leftside
+	#wprlbg-sidebar{
+		left: 0;
+		padding: 0 15px;
+		overflow-y: auto;
+		height: 100vh; // 10px header margin 
+		height: calc(100vh - 50px ) !important;
+		top: $header_height;
+
+		/* width */
+		&::-webkit-scrollbar {
+			width: 5px;
+		}
 	}
 
-	#wprlbg.light-theme {
-		#wprlbg-sidebar { 
-			background: #f7f7f7;
-		}
 
-		.wprlbg-thumbnail.active {
-			border-color: #000;
-		}
-
+	#wprlbg-sidebar-wrapper{
+		padding-top: 15px;
 	}
 
-	// no sidebar
-	#wprlbg-slider li .image{
-		margin-left: 0;
-		width: calc(100vw - 60px); // 30 px padding in both sides
+
+	// has header and sidebar
+	#wprlbg-container.show-header #wprlbg-slider  {
+		height: calc( 100vh - #{$header_height} - #{$slider_v_margin} );
 	}
 
 	
-
 	// has sidebar
-	#wprlbg.has-sidebar{
-
-		#wprlbg-slider li .image{
-			margin-left: 95px;
-			width: calc(100vw - 95px - 60px); // 30 px padding in both sides
-
-			
-		}
-		
-		#wprlbg-sidebar{
-			left: 0;
-			padding: 0 15px;
-			overflow-y: auto;
-			height: 100vh; // 10px header margin 
-
-			/* width */
-			&::-webkit-scrollbar {
-				width: 5px;
-			}
-		}
-
-		#wprlbg-sidebar-wrapper{
-			padding-top: 15px;
-		}
-	}
-
-	// max width of slider img, if it has caption 
-	#wprlbg-slider li img{
-		max-width: calc(100% - 330px);
-	}
-
-	// max width of slider img, if it does not have caption 
-	#wprlbg-slider li.no-caption img{
-		max-width: 100%;
+	#wprlbg.caption-in-bottom #wprlbg-container.has-sidebar #wprlbg-slider li .image{
+		width: calc( 100vw - 90px - 50px );
+		margin-left: 90px;
 	}
 
 
@@ -598,49 +666,34 @@ body{
 // potrait orientation
 @media (orientation: portrait) {
 
-	#wprlbg.light-theme {
-		
-		.wprlbg-thumbnail.active{
-			border-color: #000;
-		}
-	}
-
+	// show sidebar in bottom
 
 	#wprlbg-sidebar{
 		position: fixed;
-		bottom: 15px;
+		padding: 10px;
+		bottom: 0;
 		top: inherit;
 		overflow: hidden;
 		overflow-x : auto;
-		height: 50px !important;
-		width: calc(100% - 15px);
-		left: 15px;
+		// height: $bottom_sidebar_height !important;
+		width: 100vw;
+		left: 0;
 
 		/* width */
 		&::-webkit-scrollbar { height: 0px; }
 
 		.wprlbg-thumbnail{
-			height: 50px !important;
-			width: 50px !important;
+			height: $bottom_sidebar_height !important;
+			width: $bottom_sidebar_height !important;
 			float: left;
 			margin:0 10px 0 0;
 		}
 	}
 
-	#wprlbg.has-sidebar #wprlbg-slider li{
-		height: calc(100vh - 100px - $header_height); // with sidebar
+
+	// has header, has sidebar
+	#wprlbg.caption-in-bottom #wprlbg-container.has-sidebar.show-header #wprlbg-slider{
+		height: calc( 100vh - #{$header_height} - #{$slider_v_margin} - 70px );
+		margin-top: calc( #{$header_height} + 10px );
 	}
-
-	#wprlbg-slider li {
-
-		.image{
-			margin-left: 0 !important;
-			width: calc(100vw - 20px);
-		}
-
-		img {
-			max-width: 100%;
-		}
-	}
-	
 }

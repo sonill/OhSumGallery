@@ -207,7 +207,7 @@
 	$('body').on('click', `#${class_initials}-next`, function(){
 
 		if( slide_is_changing ) return;
-		
+
 		// update older and current slide number
 		older_slide = current_slide;
 		current_slide = get_proper_slide_number(current_slide + 1);
@@ -320,12 +320,12 @@
 			let please_change_slide = 0;
 			
 			// update current slide
-			if( page_X_diff > 25  ){
+			if( page_X_diff > 50  ){
 				older_slide = current_slide;
 				current_slide = get_proper_slide_number(current_slide + 1);
 				please_change_slide = 1;
 			}
-			else if( page_X_diff < -25  ){
+			else if( page_X_diff < -50  ){
 				older_slide = current_slide;
 				current_slide = get_proper_slide_number(current_slide - 1);
 				please_change_slide = 1;
@@ -333,9 +333,9 @@
 			else{
 				
 				// reposition slide to center
-				// $slider.css('transform', `translateX(${ (window_width * -1) + ( page_X_diff * -1) }px)` );
+				$slider.css('transform', `translateX(${ (window_width * -1)  }px)` );
 
-				slide_animation('left', (window_width * -1) + ( page_X_diff * -1) );
+				// slide_animation('left', (window_width * -1) + ( page_X_diff * -1) );
 			}
 
 			if( please_change_slide ){
@@ -451,19 +451,21 @@
 		// lock animation and slide change
 		slide_is_changing = 1;
 
-
 		// ------------------------------------------------------------------
 		// generate slider contents
 		// ------------------------------------------------------------------
 
-		// let $slides_to_remove = '';
+		// recalculate slider width
+		// calculate_slider_width();
+
+		// update window width and height
+		window_width = $(window).width();
+		window_height = $(window).height();
+
+		log('called');
 
 		if( older_slide != current_slide && !resize_window ) {
 
-			// make all caption invisible
-			// $(`#${class_initials}-slider .caption`).removeClass('show-caption');
-
-				
 			// ------------------------------------------------------------------
 			// figure out if requested slide is neighbour to active slide
 			// ------------------------------------------------------------------
@@ -531,7 +533,7 @@
 
 				// drag and swipe
 				
-				if( page_X_diff > 25  ){
+				if( page_X_diff > 50  ){
 					//swipe to left
 					slide_animation('left', page_X_diff * -1);
 				}
@@ -543,6 +545,7 @@
 				}
 
 			}
+
 			
 		}
 
@@ -638,32 +641,44 @@
 		// remove unwanted slide
 		$slides_to_remove.remove();
 
-		log('direction = ' + direction);
-		log('animation_start_point = ' + animation_start_point);
-		log('animation_end_point = ' + animation_end_point);
+		if(  older_slide == 0 ){
+			// do not animate
+			$slider.css('transform', 'translateX(-' +  window_width + 'px)');
+			
+			// release slide lock
+			slide_is_changing = 0;
 
-		let frame_rate = (animation_start_point + animation_end_point) / 20;
+			return;
+		}
+
+		// log('direction = ' + direction);
+		// log('animation_start_point = ' + animation_start_point);
+		// log('animation_end_point = ' + animation_end_point);
+		// log('diff = ' + (animation_end_point - animation_start_point));
+		// log('-------------------------------------------------');
+
+		let frame_rate =  (animation_start_point + animation_end_point) / 15;
 
 		// run animation
 		window.requestAnimationFrame(step);
 		function step() {
 		
 			if( direction == 'right' ){
-				
+
 				// swipe to right
 
 				// formula for correct swipe animation
 				if (animation_start_point <= animation_end_point ) { 
 					
 					// round figure
-					if( animation_start_point + animation_speed >=  animation_end_point) animation_start_point = animation_end_point;
+					if( animation_start_point - frame_rate >=  animation_end_point) animation_start_point = animation_end_point;
 
 					// use css for hardware acceleration
 					element.style.transform = 'translateX(' + animation_start_point + 'px)';
 
 					// increase counter
 					// animation_start_point += animation_speed;
-					animation_start_point -= frame_rate;
+					animation_start_point -= (frame_rate / 3);
 					
 					// call animation again
 					window.requestAnimationFrame(step);
@@ -682,7 +697,7 @@
 				if (animation_start_point >= animation_end_point ) { 
 					
 					// round figure
-					if( animation_start_point - animation_speed <=  animation_end_point ) animation_start_point = animation_end_point;
+					if( animation_start_point + frame_rate <=  animation_end_point ) animation_start_point = animation_end_point;
 
 					// use css for hardware acceleration
 					element.style.transform = 'translateX(' + animation_start_point + 'px)';
@@ -735,13 +750,12 @@
 	// calculate width for responsive-ness
 	function calculate_slider_width( args=[]){
 
+
+		// log('called 1');
+		// log('-----------------------------------------------');
 		// ------------------------------------------------------------------
 		// calculate width of slider list items
 		// ------------------------------------------------------------------
-
-		// new window width and height
-		window_width = $(window).width();
-		window_height = $(window).height();
 
 		let resized = 0;
 		if( older_slide == 0 || previous_window_height != window_height || previous_window_width != window_width ){
@@ -756,6 +770,8 @@
 
 		// remove flex class for caption height calculation
 		$cur_slide_sel.removeClass('flex');
+
+		log('resized = ' + resized);
 
 		
 		if( resized  ){
@@ -793,7 +809,6 @@
 		// ------------------------------------------------------------------
 		// set width of .image div in currently slide
 		// ------------------------------------------------------------------
-
 		
 		let caption = $(`a[data-ohsum="${gallery_name}"][data-ohsum_id="${current_slide}"]`).data('caption'); 
 		let $caption_sel = $cur_slide_sel.find('.caption'); 
@@ -818,9 +833,11 @@
 		if( caption_style == 'bottom'){
 
 			// max caption height = 200px
-			if( caption_height > 200) caption_height = 200;
-
-			if( window_width < 768 ) caption_height = 70;
+			
+			if( window_width < 768 ){
+				if( caption_height > 200) caption_height = 200;
+				else if( caption_height > 0 ) caption_height = 100;
+			}
 
 			
 			// ------------------------------------------------------------------
@@ -835,6 +852,7 @@
 
 				// set max height of image
 				$cur_slide_sel.find('img').css('max-height', `calc(100vh - 70px - ${sidebar_height}px - ${caption_height}px)`);
+				$cur_slide_sel.find('.caption').css('max-height', `${caption_height}px`);
 			}
 
 			else{
@@ -857,6 +875,12 @@
 				let cur_image_height = $cur_slide_sel.find('img').height();
 				$caption_sel.css('max-height', cur_image_height);
 			}, animation_speed)
+		}
+
+		if( resized ){
+			log('resized');
+			// re-position slider
+			slide_animation('left', window_width*-1 );
 		}
 		
 

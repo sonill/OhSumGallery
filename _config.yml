@@ -1,8 +1,0 @@
-title: Ohsumgallery
-description: A lightweight, fast, responsive, minimal and very good looking light-box style photo gallery.
-google_analytics: 
-show_downloads: true
-theme: jekyll-theme-slate
-
-gems:
-  - jekyll-mentions

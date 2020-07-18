@@ -11,38 +11,77 @@
         <link rel="stylesheet" href="bootstrap/bootstrap.min.css">
         <link rel="stylesheet" href="css/styles.css">
 
-        <title>Hello, world!</title>
+        <title>OhSum Gallery</title>
     </head>
 
-    <body>
+    <body class="bg-light">
         
-        <div class="container">
+        <div class="container mt-5">
             <div class="row">
 
-                <h1 class="col-sm-12">Gallery 1</h1>
+                <div class="col-sm-12">
+                    <h1>OhSum Gallery Testing</h1>
+                    <hr>
+                </div> 
 
-                <div class="col-sm-6">
+                <div class="col-sm-12 mt-3 mb-3">
+                    <form class="row">
+                        
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="">Theme</label>
+                                <select id="theme" class="form-control">
+                                    <option value="dark">Dark</option>
+                                    <option value="light">Light</option>
+                                </select>
+                            </div>
+                        </div><!--col-->
+
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="">Show Sidebar</label>
+                                <select id="show_sidebar" class="form-control">
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div><!--col-->
+
+                        <div class="col-sm-2">
+                            <div class="form-group">
+                                <label for="">Caption Style</label>
+                                <select id="caption_style" class="form-control">
+                                    <option value="sidebar">Sidebar</option>
+                                    <option value="bottom">Bottom</option>
+                                </select>
+                            </div>
+                        </div><!--col-->
+                        
+                    </form>
+                </div> 
+
+                <div class="col-sm-6 mb-3">
                     <div class="row">
         
-                        <div class="col-sm-6">
+                        <div class="col-6 ">
                             <a class="ohsum-gallery" href="images/2.jpg" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" data-ohsum="gallery 1" ><img src="thumbnails/2.jpg" class="img-fluid" ></a>
                         </div>
         
-                        <div class="col-sm-6">
+                        <div class="col-6">
                             <a class="ohsum-gallery" href="images/4.jpg" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" data-ohsum="gallery 1" ><img src="thumbnails/4.jpg" class="img-fluid" ></a>
                         </div>
 
                     </div>
                 </div>
 
-                <div class="col-sm-6">
+                <div class="col-sm-6 mb-3">
                     <div class="row">
                         
-                        <div class="col-sm-6">
+                        <div class="col-6">
                             <a class="ohsum-gallery" href="images/1.jpg" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" data-ohsum="gallery 1" ><img src="thumbnails/1.jpg" class="img-fluid" ></a>
                         </div>
         
-                        <div class="col-sm-6">
+                        <div class="col-6">
                             <a class="ohsum-gallery" href="images/3.jpg" data-ohsum="gallery 1" ><img src="thumbnails/3.jpg" class="img-fluid" ></a>
                         </div>
 
@@ -50,58 +89,13 @@
                             <div class="mb-3"></div>
                         </div>
         
-                        <div class="col-sm-6">
-                            <a class="ohsum-gallery" href="images/5.jpg" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" data-ohsum="gallery 1" ><img src="thumbnails/5.jpg" class="img-fluid" ></a>
-                        </div>
-        
-                        <div class="col-sm-6">
+                        
+                        <div class="col-6">
                             <a class="ohsum-gallery" href="images/6.jpg" data-ohsum="gallery 1" ><img src="thumbnails/6.jpg" class="img-fluid" ></a>
                         </div>
-
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-
-        <div class="container mt-5">
-            <div class="row">
-
-                <h1 class="col-sm-12">Gallery 1</h1>
-
-                <div class="col-sm-6">
-                    <div class="row">
-        
-                        <div class="col-sm-6">
-                            <a class="ohsum-gallery" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" href="images/4.jpg" data-ohsum="gallery 1" ><img src="thumbnails/4.jpg" class="img-fluid" ></a>
-                        </div>
-
-                        <div class="col-sm-6">
-                            <a class="ohsum-gallery" href="images/2.jpg" data-ohsum="gallery 1" ><img src="thumbnails/2.jpg" class="img-fluid" ></a>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="col-sm-6">
-                    <div class="row">
                         
-                        <div class="col-sm-6">
-                            <a class="ohsum-gallery" data-caption="<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. </p><p>It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. </p><p>It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>" href="images/1.jpg" data-ohsum="gallery 1" ><img src="thumbnails/1.jpg" class="img-fluid" ></a>
-                        </div>
-        
-                        <div class="col-sm-6">
-                            <a class="ohsum-gallery" href="images/3.jpg" data-ohsum="gallery 1" ><img src="thumbnails/3.jpg" class="img-fluid" ></a>
-                        </div>
-
-                        <div class="col-sm-12">
-                            <div class="mb-3"></div>
-                        </div>
-        
-        
-                        <div class="col-sm-6">
-                            <a class="ohsum-gallery" href="images/6.jpg" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" data-ohsum="gallery 1" ><img src="thumbnails/6.jpg" class="img-fluid" ></a>
+                        <div class="col-6">
+                            <a class="ohsum-gallery" href="images/5.jpg" data-caption="<p><strong>Lorem Ipsum is simply dummy text of the printing and typesetting industry.</strong></p><p>- <a href='#'>Lipsum.org</a></p>" data-ohsum="gallery 1" ><img src="thumbnails/5.jpg" class="img-fluid" ></a>
                         </div>
 
                     </div>
@@ -115,9 +109,26 @@
         <script src="js/scripts.js" ></script>
 
         <script>
-            // jQuery(document).ready(function($){
-            //     $('.ohsum-gallery').ohsumGallery();
-            // })
+            jQuery(document).ready(function($){
+
+                load_plugin();
+               
+                // $('a[data-ohsum="gallery 1"]').ohsumGallery();
+
+                $('select.form-control').change(function(){
+                    load_plugin();
+                })
+
+                function load_plugin(){
+                    $('a[data-ohsum="gallery 1"]').ohsumGallery({
+                        theme: $('#theme').val(),
+                        show_sidebar: $('#show_sidebar').val(),
+                        caption_style: $('#caption_style').val()
+                    });
+                }
+
+
+            })
         </script>
     </body>
 

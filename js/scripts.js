@@ -6,10 +6,10 @@
 	const slide_margin = 20;
 	
 	// plugin options
-	const theme_style = 'dark'; // dark, light
+	let theme_style = 'dark'; // dark, light
 	let caption_style = 'bottom'; // sidebar, bottom
-	let show_header = 1;
 	let show_sidebar = 1;
+	let show_header = 1;
 
 	let animation_speed = 70;
 	let slideshow_speed = 3000;
@@ -30,14 +30,17 @@
 	let $slider;
 	let $slides_to_remove = '';
 	
-	let settings =  '';
+	let defaults = {
+		theme : 'dark',
+		show_sidebar : true,
+		caption_style : 'sidebar'
+	};
 
 	let resize_window = 0; // required. notifies if window was resized. prevents duplicates
 	let mouse_move_timer;
 	let slideshow_loop;
 	let slide_show_running = 0;
 	let slide_is_changing = 0; // slide change animation 
-	
 	
 
 	// for debug
@@ -47,39 +50,56 @@
 	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><path class="play-pause-path" d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
 	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="play-pause-path" d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><rect x="6" y="6" width="7" height="7" fill="white"/></svg>';
 	
-	
-
 
 	$.fn.ohsumGallery = function(options) {
 
-		// This is the easiest way to have default options.
-        // settings = $.extend({
-        //     color: "#556b2f",
-        //     backgroundColor: "white"
-		// }, options );
+		let settings = $.extend( {}, defaults, options );
 
-		
+		$(this).each(function(){
+			// set settings into each selector as data-attributes
+			$(this)
+				.attr('data-theme', settings.theme)
+				.attr('data-show_sidebar', settings.show_sidebar)
+				.attr('data-caption_style', settings.caption_style)
+		})
+
 		$(this).click(function(e){
-
-			e.preventDefault();
 			
+			e.preventDefault();
+
+			// prevent duplicates
+			if( $(`#${class_initials}`).length > 0 ) return;
+			
+			
+			// we will need gallery name later
 			gallery_name = $(this).data('ohsum');
+
+			
+			// generate settings from markups
+			theme_style = $(this).attr('data-theme');
+			caption_style = $(this).attr('data-caption_style');
+			show_sidebar = parseInt($(this).attr('data-show_sidebar'));
+
 		
 			// generate markups
 			init($(this));
 			
+			
+			// commonly used selectors
 			$main_container  = $(`#${class_initials}-container`);
 			$slider = $(`#${class_initials}-slider`);
+
 			
 			// open gallery modal
 			$main_container.show();
 			$('body').css('overflow', 'hidden');
 			
+			
+			// update window width and height
 			window_width = $(window).width();
 			window_height = $(window).height();
 
-			// $(`#${class_initials}-slider`).addClass('slide-left');
-
+			
 			// load and switch to correct slide
 			load_slide();
 			
@@ -462,7 +482,6 @@
 		window_width = $(window).width();
 		window_height = $(window).height();
 
-		log('called');
 
 		if( older_slide != current_slide && !resize_window ) {
 
@@ -771,8 +790,6 @@
 		// remove flex class for caption height calculation
 		$cur_slide_sel.removeClass('flex');
 
-		log('resized = ' + resized);
-
 		
 		if( resized  ){
 
@@ -878,7 +895,6 @@
 		}
 
 		if( resized ){
-			log('resized');
 			// re-position slider
 			slide_animation('left', window_width*-1 );
 		}
@@ -1037,7 +1053,6 @@
 
 
 // self initialize plugin
-jQuery(document).ready(function($){
-
-	$('a').ohsumGallery();
-})
+// jQuery(document).ready(function($){
+// 	$('a').ohsumGallery();
+// })

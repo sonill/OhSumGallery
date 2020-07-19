@@ -13,6 +13,7 @@ body { font-family: 'Roboto', sans-serif; }
 #wprlbg.dark-theme #wprlbg-buttons button:hover { background: #494949; }
 #wprlbg.dark-theme #wprlbg-show-sidebar path { fill: #fff; }
 #wprlbg.dark-theme #wprlbg-auto-play path.play-pause-path { fill: #fff; stroke-width: 0; }
+#wprlbg.dark-theme #wprlbg-auto-play rect.stop-shape { fill: black; }
 #wprlbg.dark-theme #wprlbg-slider li .caption { color: #a0a0a0; /* width */ /* Track */ }
 #wprlbg.dark-theme #wprlbg-slider li .caption::-webkit-scrollbar { width: 5px; }
 #wprlbg.dark-theme #wprlbg-slider li .caption::-webkit-scrollbar-track { background: #171717; }
@@ -31,7 +32,7 @@ body { font-family: 'Roboto', sans-serif; }
 #wprlbg.light-theme #wprlbg-sidebar:hover::-webkit-scrollbar-thumb { background: #000; }
 #wprlbg.light-theme #wprlbg-buttons button path { stroke: #000; }
 #wprlbg.light-theme #wprlbg-buttons button:hover { background: #eee; }
-#wprlbg.light-theme #wprlbg-show-sidebar path { fill: #000; }
+#wprlbg.light-theme #wprlbg-show-sidebar path, #wprlbg.light-theme #wprlbg-show-sidebar rect { fill: #000; }
 #wprlbg.light-theme #wprlbg-auto-play path.play-pause-path { fill: black; stroke-width: 0; }
 #wprlbg.light-theme #wprlbg-slider li .caption { color: #515151; }
 
@@ -44,7 +45,6 @@ body { font-family: 'Roboto', sans-serif; }
 #wprlbg-buttons { float: right; }
 #wprlbg-buttons button { background: none; border: none; padding: 0; width: 50px; height: 50px; outline: none !important; -webkit-transition: 0.3s; transition: 0.3s; opacity: 1; }
 #wprlbg-buttons button svg { margin: auto; }
-#wprlbg-buttons #wprlbg-show-sidebar path { stroke-width: 0; }
 #wprlbg-buttons #wprlbg-close:hover path { stroke: red !important; }
 
 #wprlbg-sidebar { display: none; position: absolute; z-index: 999; }

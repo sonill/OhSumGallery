@@ -49,8 +49,8 @@
 	let show_log = 1;
 
 	let $autoplay_btn;
-	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><path class="play-pause-path" d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
-	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="play-pause-path" d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="2"/><rect x="6" y="6" width="7" height="7" fill="white"/></svg>';
+	let slideshow_icon_play = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="1.2"/><path class="play-pause-path" d="M13.1405 9.36439L7.12909 13.1406V5.58823L13.1405 9.36439Z" fill="white"/></svg>';
+	let slideshow_icon_pause = '<svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path class="play-pause-path" d="M9.5 18C4.80558 18 1 14.1944 1 9.5C1 4.80558 4.80558 1 9.5 1C14.1944 1 18 4.80558 18 9.5C18 14.1944 14.1944 18 9.5 18Z" stroke="white" stroke-width="1.2"/><rect class="stop-shape" x="6" y="6" width="7" height="7" fill="white"/></svg>';
 	
 
 	$.fn.ohsumGallery = function(options) {
@@ -393,10 +393,10 @@
 
 				template += `<div id="${class_initials}-buttons">`; 
 					template += `<button title="Auto Play" type="button" id="${class_initials}-auto-play">${slideshow_icon_play}</button>`; 
-					template += `<button  title="Toggle Sidebar" type="button" id="${class_initials}-show-sidebar"><svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.5625 0H17V7.4375H9.5625V0Z" fill="white" /><path d="M0 0H7.4375V7.4375H0V0Z" fill="white"/><path d="M9.5625 9.5625H17V17H9.5625V9.5625Z" fill="white"/><path d="M0 9.5625H7.4375V17H0V9.5625Z" fill="white"/></svg></button>`; 
-					template += `<button title="Previous Slide" type="button" id="${class_initials}-prev"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.37093 1.21777L1.09583 10.1912M9.37093 17.8088L1.09583 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
-					template += `<button title="Next Slide" type="button" id="${class_initials}-next"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.62677 1.21777L9.90187 10.1912M1.62677 17.8088L9.90187 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
-					template += `<button  title="Close" type="button" id="${class_initials}-close"><svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6484 1.21777L9.3733 10.1912M17.6484 17.8088L9.3733 8.83535M1.62793 1.21777L9.90303 10.1912M1.62793 17.8088L9.90303 8.83535" stroke="white" stroke-width="2"/></svg></button>`; 
+					template += `<button  title="Toggle Sidebar" type="button" id="${class_initials}-show-sidebar"><svg width="9" height="19" viewBox="0 0 9 19" fill="none" xmlns="http://www.w3.org/2000/svg"><rect y="5" width="9" height="9" fill="white"/><path d="M9 16H0" stroke="white" stroke-width="1.5"/><path d="M1 19L1 16" stroke="white" stroke-width="2"/><path d="M8 19L8 16" stroke="white" stroke-width="2"/><path d="M9 3H0" stroke="white" stroke-width="1.5"/><path d="M1 0L1 3" stroke="white" stroke-width="2"/><path d="M8 0L8 3" stroke="white" stroke-width="2"/></svg></button>`; 
+					template += `<button title="Previous Slide" type="button" id="${class_initials}-prev"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.37093 1.21777L1.09583 10.1912M9.37093 17.8088L1.09583 8.83535" stroke="white" stroke-width="1.2"/></svg></button>`; 
+					template += `<button title="Next Slide" type="button" id="${class_initials}-next"><svg width="11" height="19" viewBox="0 0 11 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.62677 1.21777L9.90187 10.1912M1.62677 17.8088L9.90187 8.83535" stroke="white" stroke-width="1.2"/></svg></button>`; 
+					template += `<button  title="Close" type="button" id="${class_initials}-close"><svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17.6484 1.21777L9.3733 10.1912M17.6484 17.8088L9.3733 8.83535M1.62793 1.21777L9.90303 10.1912M1.62793 17.8088L9.90303 8.83535" stroke="white" stroke-width="1.2"/></svg></button>`; 
 				template += `</div>`;
 			template += `</div>`;
 
@@ -484,6 +484,8 @@
 		window_width = $(window).width();
 		window_height = $(window).height();
 
+		let skip_animation = 0;
+
 
 		if( older_slide != current_slide && !resize_window ) {
 
@@ -515,6 +517,8 @@
 
 				$slides_to_remove = $(`#${class_initials}-slider li`);
 
+				skip_animation = 1;
+
 				// ------------------------------------------------------------------
 				// generate totally new slides
 				// ------------------------------------------------------------------
@@ -544,9 +548,9 @@
 					
 				}
 				else{
-
+					
 					// swipe to left
-					slide_animation('left', 0 );
+					slide_animation('left', 0, skip_animation );
 			
 				}
 			}
@@ -766,7 +770,7 @@
 		
 	}
 	
-	function slide_animation(direction, animation_start_point){
+	function slide_animation(direction, animation_start_point, disable_animation = 0){
 
 		let animation_complete = 0;
 		const element = document.getElementById(class_initials + '-slider' ); 
@@ -775,7 +779,7 @@
 		// remove unwanted slide
 		$slides_to_remove.remove();
 
-		if(  older_slide == 0 ){
+		if(  older_slide == 0 || disable_animation ){
 			// do not animate
 			$slider.css('transform', 'translateX(-' +  window_width + 'px)');
 			

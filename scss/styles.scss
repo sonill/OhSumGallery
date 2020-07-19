@@ -80,6 +80,10 @@ body{
 			stroke-width: 0;
 		}
 
+		rect.stop-shape{
+			fill: black;
+		}
+
 	}
 
 	#wprlbg-slider li .caption{
@@ -143,7 +147,7 @@ body{
 
 	// show / hide sidebar button
 	#wprlbg-show-sidebar {
-		path{
+		path, rect{
 			fill : #000;
 		}
 	}
@@ -407,10 +411,10 @@ body{
 	}
 
 	#wprlbg-show-sidebar {
-		path{
-			stroke-width: 0;
-			// fill : #b9b9b9;
-		}
+		// path{
+		// 	stroke-width: 0;
+		// 	// fill : #b9b9b9;
+		// }
 
 		// &:hover{
 		// 	// path{

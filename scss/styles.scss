@@ -511,11 +511,25 @@ body{
 		}
 
 
-		// .image.loading{
-		// 	img{
-		// 		opacity: 0;
-		// 	}
-		// }
+		.image.loading{
+			
+			img{
+				opacity: 0;
+				position: relative;
+			}
+
+			.caption{
+				opacity: 0;
+			}
+
+			&:before{
+				content: '';
+				background: url(../images/spinner.png) no-repeat center;
+				width: 100%;
+				height: 100%;
+				position: absolute;
+			}
+		}
 
 		.caption{
 			color: #fff;

@@ -26,9 +26,11 @@
 	let $gallery_items = '';
 	let gallery_name = '';
 
+	let $body = $('body');
 	let $main_container;
 	let $slider;
 	let $slides_to_remove = '';
+	let $sidebar_wrapper;
 	
 	let defaults = {
 		theme : 'dark',
@@ -92,7 +94,7 @@
 			
 			// open gallery modal
 			$main_container.show();
-			$('body').css('overflow', 'hidden');
+			$body.css('overflow', 'hidden');
 			
 			
 			// update window width and height
@@ -129,7 +131,7 @@
 	// show / hide sidebar button
 	// ------------------------------------------------------------------
 
-	$('body').on('click', `#${class_initials}-show-sidebar`, function(){
+	$body.on('click', `#${class_initials}-show-sidebar`, function(){
 
 		// show_sidebar = ( show_sidebar ) ? 0 : 1;
 
@@ -143,7 +145,6 @@
 
 		show_hide_sidebar( !show_sidebar );
 		
-		calculate_slider_width();
 	})
 
 
@@ -151,7 +152,7 @@
 	// autoplay / slideshow button
 	// ------------------------------------------------------------------
 
-	$('body').on('click', `#${class_initials}-auto-play`, function(){
+	$body.on('click', `#${class_initials}-auto-play`, function(){
 
 		$autoplay_btn = $(this);
 
@@ -176,7 +177,7 @@
 	// change slide when clicked in thumbnail
 	// ------------------------------------------------------------------
 
-	$('body').on('click', `.${class_initials}-thumbnail`, function(){
+	$body.on('click', `.${class_initials}-thumbnail`, function(){
 		
 		// change older and current slide
 		older_slide = current_slide;
@@ -191,7 +192,7 @@
 	// ------------------------------------------------------------------
 	// close button
 	// ------------------------------------------------------------------
-	$('body').on('click', `#${class_initials}-close`, function(){
+	$body.on('click', `#${class_initials}-close`, function(){
 
 		older_slide = 0;
 		current_slide = 1;
@@ -200,7 +201,7 @@
 		stop_slideshow();
 
 		$(`#${class_initials}`).remove();
-		$('body').css('overflow', '');
+		$body.css('overflow', '');
 	})
 
 
@@ -208,7 +209,7 @@
 	// prev button click
 	// ------------------------------------------------------------------
 
-	$('body').on('click', `#${class_initials}-prev`, function(){
+	$body.on('click', `#${class_initials}-prev`, function(){
 
 		if( slide_is_changing ) return;
 		
@@ -224,7 +225,7 @@
 	// next button click 
 	// ------------------------------------------------------------------
 
-	$('body').on('click', `#${class_initials}-next`, function(){
+	$body.on('click', `#${class_initials}-next`, function(){
 
 		if( slide_is_changing ) return;
 
@@ -279,7 +280,7 @@
 	let pageX_end = 0;
 	let page_X_diff = 0;
 
-	$('body')
+	$body
 		.on('mousedown touchstart', `#${class_initials}-slider-container`, function(e) {
 
 			isDragging = false;
@@ -422,6 +423,7 @@
 		let items_counter = 1;
 		$gallery_items = $(`a[data-ohsum="${gallery_name}"]`);
 		total_items = $gallery_items.length;
+		$sidebar_wrapper = $(`#${class_initials}-sidebar-wrapper`);
 
 		$gallery_items.each(function(){
 
@@ -436,7 +438,7 @@
 			// generate thumbnail images
 			// ------------------------------------------------------------------
 
-			$(`#${class_initials}-sidebar-wrapper`).append(`<a data-href="#${class_initials}-slide-${items_counter}" data-id="${items_counter}" id="${class_initials}-thumbnail-${items_counter}" class="${class_initials}-thumbnail" style="background-image:url(${$('img', this).attr('src')})"></a>`);
+			$sidebar_wrapper.append(`<a data-href="#${class_initials}-slide-${items_counter}" data-id="${items_counter}" id="${class_initials}-thumbnail-${items_counter}" class="${class_initials}-thumbnail" style="background-image:url(${$('img', this).attr('src')})"></a>`);
 	
 
 			// ------------------------------------------------------------------
@@ -568,18 +570,10 @@
 			
 		}
 
-		// recalculate slider width
-		calculate_slider_width();
 
 
-		// ------------------------------------------------------------------
-		// enable button
-		// ------------------------------------------------------------------
-
-		// $(`#${class_initials}-buttons button`).prop('disabled', false);
-
-
-		if( older_slide != current_slide && !resize_window ) {
+		// if( older_slide != current_slide && !resize_window ) {
+		if( !resize_window ) {
 
 			// ------------------------------------------------------------------
 			// lazy loading images in main slider
@@ -587,11 +581,11 @@
 
 			// select images which are not already loaded
 			let $current_slide_img = $(`#${class_initials}-slide-${current_slide} img:not(.loaded`);
-			let large_image = $current_slide_img.attr('src');
+			let large_image = $current_slide_img.attr('data-src');
 
 			$current_slide_img
-				// .attr('src', large_image)
-				// .removeAttr('src')
+				.attr('src', large_image)
+				.removeAttr('data-src')
 				.load(function(){
 
 					// mark image as loaded
@@ -599,6 +593,8 @@
 					
 					let $parent = $(this).parents('.image');			
 					$parent.removeClass('loading');
+
+					$body.trigger('image_loaded');
 				})
 
 
@@ -646,6 +642,125 @@
 				scrollTop: ((current_slide-1) * thumbnail_offset) - 150
 			}, animation_speed);
 
+		}
+
+
+		// ------------------------------------------------------------------
+		// image has been loaded
+		// ------------------------------------------------------------------
+		
+		let $cur_slide_sel = $(`#${class_initials}-slide-${current_slide}`);
+		let caption = $(`a[data-ohsum="${gallery_name}"][data-ohsum_id="${current_slide}"]`).data('caption'); 
+		let $caption_sel = $cur_slide_sel.find('.caption'); 
+
+		$body.on('image_loaded', function(){
+			
+			// ------------------------------------------------------------------
+			// show hide captions
+			// ------------------------------------------------------------------
+	
+	
+			// remove flex class for caption height calculation
+			$cur_slide_sel.removeClass('flex');
+			
+			if( resize_window  ){
+	
+				if( window_height > window_width ){
+	
+					// ------------------------------------------------------------------
+					// portrait mode
+					// ------------------------------------------------------------------
+	
+					// auto change caption style to bottom in potrait mode
+					caption_style = 'bottom';
+	
+					// set width of sidebar ul wrapper
+					$sidebar_wrapper.css('width', (60 * total_items) + 'px');
+	
+				}
+				else{
+	
+					// ------------------------------------------------------------------
+					// landscape mode
+					// ------------------------------------------------------------------
+	
+					// unset width of sidebar wrapper in landscape mode
+					$sidebar_wrapper.css('width', '');
+				}
+	
+			}
+			
+			
+			let caption_height = 0;
+	
+			// hide caption if empty
+			if( caption === undefined || caption.length < 1 ){
+				$caption_sel.hide();
+	
+				// tell css slide li item does not have caption
+				$cur_slide_sel.addClass( 'no-caption' );
+			}
+			else{
+				caption_height = $caption_sel.outerHeight();
+			}
+	
+			// make this item flexbox to correct display positioning
+			$cur_slide_sel.addClass('flex');
+			
+			
+			if( caption_style == 'bottom'){
+				
+				// ------------------------------------------------------------------
+				// set max height of image
+				// ------------------------------------------------------------------
+	
+				if( window_height > window_width  ){
+	
+					// ------------------------------------------------------------------
+					// potrait mode
+					// ------------------------------------------------------------------
+					
+					// let sidebar_height = (show_sidebar) ?  70 : 0;
+	
+					// set max height of image
+					// $cur_slide_sel.find('img').css('max-height', `calc(100vh - 80px - ${caption_height}px)`);
+					// $cur_slide_sel.find('.caption').css('max-height', `${caption_height}px`);
+				}
+	
+				else{
+					
+					// ------------------------------------------------------------------
+					// landscape mode
+					// ------------------------------------------------------------------
+	
+					// set max height of image
+					$cur_slide_sel.find('img').css('max-height', `calc(100vh - ${ header_height + slide_margin + caption_height }px`);
+				}
+				
+			}
+			else{
+	
+				// ------------------------------------------------------------------
+				// caption style is SIDEBAR
+				// ------------------------------------------------------------------
+	
+				// match the height of caption to the height of image
+				// setTimeout(function(){
+				// 	// give browser some time to complete the animation and render everything properly
+				// 	let cur_image_height = $cur_slide_sel.find('img').height();
+				// 	$caption_sel.css('max-height', cur_image_height);
+				// }, animation_speed)
+			}
+		
+		})
+
+		
+
+
+
+		if( resize_window ){
+			// re-position slider
+			slide_animation('left', window_width*-1 );
 		}
 
 		
@@ -757,150 +872,13 @@
 
 		let temp_slider_contents = '';
 			temp_slider_contents += `<li data-id="${new_slide_id}" id="${class_initials}-slide-${new_slide_id}" >`;
-			temp_slider_contents += `<div class="image loading"><img src="${ $temp_selector.attr('href')}" >`;
+			temp_slider_contents += `<div class="image loading"><img data-src="${ $temp_selector.attr('href')}" >`;
 			temp_slider_contents += `<div class="caption">${caption}</div>`;				
 			temp_slider_contents += `</div></li>`;
 
 		return temp_slider_contents;
 
 	}
-
-
-	// calculate width for responsive-ness
-	function calculate_slider_width( args=[]){
-
-
-		// log('called 1');
-		// log('-----------------------------------------------');
-		// ------------------------------------------------------------------
-		// calculate width of slider list items
-		// ------------------------------------------------------------------
-
-		let resized = 0;
-		if( older_slide == 0 || previous_window_height != window_height || previous_window_width != window_width ){
-			resized = 1;
-		}
-
-		// update previous window width and height
-		previous_window_width = window_width;
-		previous_window_height = window_height;
-
-		let $cur_slide_sel = $(`#${class_initials}-slide-${current_slide}`);
-
-		// remove flex class for caption height calculation
-		$cur_slide_sel.removeClass('flex');
-
-		
-		if( resized  ){
-
-			if( window_height > window_width ){
-				// auto change caption style to bottom in potrait mode
-				caption_style = 'bottom';
-			}
-
-
-			if( window_height > window_width ){
-
-				// ------------------------------------------------------------------
-				// portrait mode
-				// ------------------------------------------------------------------
-
-				let thumbnail_width = 60;
-				
-				// set width of sidebar ul wrapper
-				$(`#${class_initials}-sidebar-wrapper`).css('width', (thumbnail_width * total_items) + 'px');
-
-			}
-			else{
-				// ------------------------------------------------------------------
-				// landscape mode
-				// ------------------------------------------------------------------
-
-				// unset width of sidebar wrapper in landscape mode
-				$(`#${class_initials}-sidebar-wrapper`).css('width', '');
-			}
-
-		}
-
-		
-		// ------------------------------------------------------------------
-		// set width of .image div in currently slide
-		// ------------------------------------------------------------------
-		
-		let caption = $(`a[data-ohsum="${gallery_name}"][data-ohsum_id="${current_slide}"]`).data('caption'); 
-		let $caption_sel = $cur_slide_sel.find('.caption'); 
-		let caption_height = 0;
-
-		
-		// hide caption if empty
-		if( caption === undefined || caption.length < 1 ){
-			$caption_sel.hide();
-
-			// tell css slide li item does not have caption
-			$cur_slide_sel.addClass( 'no-caption' );
-		}
-		else{
-			caption_height = $caption_sel.outerHeight();
-		}
-
-		// make this item flexbox to correct display positioning
-		$cur_slide_sel.addClass('flex');
-		
-
-		if( caption_style == 'bottom'){
-
-			// max caption height = 200px
-			
-			if( window_width < 768 ){
-				if( caption_height > 200) caption_height = 200;
-				else if( caption_height > 0 ) caption_height = 100;
-			}
-
-			
-			// ------------------------------------------------------------------
-			// set max height of image
-			// ------------------------------------------------------------------
-
-			
-			if( window_height > window_width  ){
-				// potrait mode
-				
-				let sidebar_height = (show_sidebar) ?  70 : 0;
-
-				// set max height of image
-				$cur_slide_sel.find('img').css('max-height', `calc(100vh - 70px - ${sidebar_height}px - ${caption_height}px)`);
-				$cur_slide_sel.find('.caption').css('max-height', `${caption_height}px`);
-			}
-
-			else{
-				// landscape mode
-
-				// set max height of image
-				$cur_slide_sel.find('img').css('max-height', `calc(100vh - ${header_height + slide_margin}px - ${caption_height}px)`);
-			}
-			
-		}
-		else{
-
-			// ------------------------------------------------------------------
-			// caption style is SIDEBAR
-			// ------------------------------------------------------------------
-
-			// match the height of caption to the height of image
-			setTimeout(function(){
-				// give browser some time to complete the animation and render everything properly
-				let cur_image_height = $cur_slide_sel.find('img').height();
-				$caption_sel.css('max-height', cur_image_height);
-			}, animation_speed)
-		}
-
-		if( resized ){
-			// re-position slider
-			slide_animation('left', window_width*-1 );
-		}
-		
-
-	} // calculate_slider_width
 
 
 	// get proper slide number
@@ -996,7 +974,7 @@
 
 
 		// show header if mouse moves
-		$('body').on('mousemove', $main_container, function(){
+		$body.on('mousemove', $main_container, function(){
 
 			if( !slide_show_running ) return;
 
